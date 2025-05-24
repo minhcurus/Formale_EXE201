@@ -13,7 +13,8 @@ namespace Application.Interface
         Task<ResultMessage> Register(RegisterDTO registerDTO);
         Task<ResultMessage> Login(LoginDTO loginDTO);
         Task<ResultMessage> ChangePassword(ChangePasswordDTO changePasswordDTO);
-
+        Task<ResultMessage> ActiveAccount(string email,string otp);
+        Task<ResultMessage> ResetOtp(string email);
         Task<ResultMessage> Logout(string token);
 
     }

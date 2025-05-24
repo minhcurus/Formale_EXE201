@@ -28,6 +28,9 @@ namespace Domain.Entities
         public DateTime UpdateAt { get; set; }
         public string IsActive { get; set; }
         public string Status { get; set; }
+
+        public string? otp {  get; set; }
+        public DateTime? OtpExpiry { get; set; }
         public Roles Role { get; set; }
     }
 }
