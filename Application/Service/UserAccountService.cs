@@ -12,17 +12,20 @@ using Domain.Entities;
 using Infrastructure.Repository;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Options;
+using static System.Net.WebRequestMethods;
 namespace Application.Service
 {
     public class UserAccountService : IUserAccountService
     {
         private readonly UserAccountRepository _repository;
         private readonly JwtSetting _jwtSettings;
+        private readonly EmailService _emailService;
 
-        public UserAccountService(UserAccountRepository repository, IOptions<JwtSetting> jwtSetting)
+        public UserAccountService(UserAccountRepository repository, IOptions<JwtSetting> jwtSetting, EmailService emailService)
         {
             _repository = repository;
             _jwtSettings = jwtSetting.Value;    
+            _emailService = emailService;
         }
 
         public async Task<ResultMessage> ChangePassword(ChangePasswordDTO changePasswordDTO)
@@ -38,13 +41,13 @@ namespace Application.Service
                 };
             }
 
-            var checkToken = await _repository.GetByToken(changePasswordDTO.Token);
+            var checkToken = await _repository.GetByToken(changePasswordDTO.Otp);
             if (checkToken == null) 
             {
                 return new ResultMessage
                 {
                     Success = false,
-                    Message = "Token không hợp lệ",
+                    Message = "OTP không hợp lệ",
                     Data = null
                 };
             }
@@ -84,6 +87,16 @@ namespace Application.Service
                 };
             }
 
+            if (getEmail.IsActive != "Active")
+            {
+                return new ResultMessage
+                {
+                    Success = false,
+                    Message = "Tài khoản chưa được kích hoạt, hãy kích hoạt tài khoản của bạn",
+                    Data = null
+                };
+            }
+
             var getLogin = await _repository.GetLogin(loginDTO.Email,loginDTO.Password);
             if (getLogin == null)
             {
@@ -98,6 +111,7 @@ namespace Application.Service
             var token = GenerateJwtToken(getLogin);
             getLogin.Token = token;
             await _repository.UpdateAsync(getLogin);
+
             return new ResultMessage
             {
                 Success = true,
@@ -119,6 +133,7 @@ namespace Application.Service
                 };
             }
 
+            var otp = OTPGenerator.GenerateOTP();
             var newUser = new UserAccount
             {
                 Email = registerDTO.Email,
@@ -129,18 +144,20 @@ namespace Application.Service
                 Address = registerDTO.Address,
                 Image_User = null,
                 Background_Image = null,
-                Status = "Active",
+                Status = "InActive",
                 Description = null,
-                IsActive = "Active",
-                RoleId = 2
+                IsActive = "InActive",
+                RoleId = 2,
+                otp = otp,  
+                OtpExpiry = DateTime.UtcNow.AddMinutes(10),
             };
 
             await _repository.CreateAsync(newUser);
-
+            await _emailService.SendEmailAsync(registerDTO.Email, "Mã kích hoạt tài khoản", $"Mã OTP của bạn là: {otp}");
             return new ResultMessage
             {
                 Success = true,
-                Message = "Đăng ký thành công!",
+                Message = "Đăng ký thành công! \n\r Hãy kiểm tra email của bạn để nhận mã OTP kích hoạt!",
                 Data = "0"
             };
 
@@ -199,6 +216,81 @@ namespace Application.Service
             return tokenHandler.WriteToken(token);
         }
 
+        public async Task<ResultMessage> ActiveAccount(string email,string otp)
+        {
+            var check = await _repository.GetEmail(email);
+            if (check == null)
+            {
+                return new ResultMessage
+                {
+                    Success = false,
+                    Message = "Email không tồn tại!",
+                    Data = null
+                };
+            }
+
+            var getOtp = await _repository.GetOtp(otp);
+            if (getOtp == null)
+            {
+                return new ResultMessage
+                {
+                    Success = false,
+                    Message = "Mã Otp của bạn không hợp lệ",
+                    Data = null
+                };
+            }
+
+            if (getOtp.OtpExpiry < DateTime.UtcNow)
+            {
+                return new ResultMessage
+                {
+                    Success = false,
+                    Message = "OTP đã hết hạn",
+                    Data = null
+                };
+            }
+
+            getOtp.IsActive = "Active";
+            getOtp.Status = "Active";
+            getOtp.otp = null;          
+            getOtp.OtpExpiry = null;    
+            await _repository.UpdateAsync(getOtp);
+
+            return new ResultMessage
+            {
+                Success = true,
+                Message = "Kích hoạt tài khoản thành công!",
+                Data = getOtp.Email,
+            };
+
+        }
+
+        public async Task<ResultMessage> ResetOtp(string email)
+        {            
+            var check = await _repository.GetEmail(email);
+            if (check == null)
+            {
+                return new ResultMessage
+                {
+                    Success = false,
+                    Message = "Email không tồn tại!",
+                    Data = null
+                };
+            }
+            var otp = OTPGenerator.GenerateOTP();
+
+
+            check.otp = otp;
+            check.OtpExpiry = DateTime.UtcNow.AddMinutes(10);
+            await _repository.UpdateAsync(check);
+            await _emailService.SendEmailAsync(email, "Mã kích hoạt tài khoản", $"Mã OTP của bạn là: {otp}");
+            return new ResultMessage
+            {
+                Success = true,
+                Message = "Đã gửi lại mã otp, hãy kiểm tra Email của bạn!",
+                Data = null,
+            };
+        }
     }
 }
 

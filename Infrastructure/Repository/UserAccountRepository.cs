@@ -30,5 +30,11 @@ namespace Infrastructure.Repository
             return await _context.Users.FirstOrDefaultAsync(u => u.Token == token);
         }
 
+        public async Task<UserAccount> GetOtp(string otp)
+        {
+            return await _context.Users.FirstOrDefaultAsync(e => e.otp == otp);
+        }
+
+
     }
 }

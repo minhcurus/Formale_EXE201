@@ -19,8 +19,13 @@ builder.Services.Configure<JwtSetting>(
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSetting>();
 var key = Encoding.ASCII.GetBytes(jwtSettings.SecretKey);
 
+builder.Services.Configure<EmailSettings>(
+    builder.Configuration.GetSection("EmailSettings"));
+
+
 //DI Service
 builder.Services.AddScoped<IUserAccountService, UserAccountService>();
+builder.Services.AddScoped<EmailService>();
 
 //DI Repository
 builder.Services.AddScoped<UserAccountRepository>();
