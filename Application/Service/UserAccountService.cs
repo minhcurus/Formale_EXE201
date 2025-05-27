@@ -41,8 +41,8 @@ namespace Application.Service
                 };
             }
 
-            var checkToken = await _repository.GetByToken(changePasswordDTO.Otp);
-            if (checkToken == null) 
+            var checkOtp = await _repository.GetOtp(changePasswordDTO.Otp);
+            if (checkOtp == null) 
             {
                 return new ResultMessage
                 {
@@ -64,6 +64,8 @@ namespace Application.Service
             }
 
             user.Password = changePasswordDTO.NewPassword;
+            user.otp = null;
+            user.OtpExpiry = null;
             await _repository.UpdateAsync(user);
 
             return new ResultMessage
