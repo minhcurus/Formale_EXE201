@@ -4,6 +4,7 @@ using Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    partial class AppDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250528025237_AddProduct")]
+    partial class AddProduct
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,13 +33,25 @@ namespace Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProductId"));
 
-                    b.Property<int>("BrandId")
+                    b.Property<string>("BrandId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("BrandId1")
                         .HasColumnType("int");
 
-                    b.Property<int>("CategoryId")
+                    b.Property<string>("CategoryId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CategoryId1")
                         .HasColumnType("int");
 
-                    b.Property<int>("ColorId")
+                    b.Property<string>("ColorId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ColorId1")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
@@ -53,7 +68,11 @@ namespace Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<int>("MaterialId")
+                    b.Property<string>("MaterialId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MaterialId1")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
@@ -63,10 +82,18 @@ namespace Infrastructure.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("StyleId")
+                    b.Property<string>("StyleId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("StyleId1")
                         .HasColumnType("int");
 
-                    b.Property<int>("TypeId")
+                    b.Property<string>("TypeId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TypeId1")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -74,17 +101,17 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("ProductId");
 
-                    b.HasIndex("BrandId");
+                    b.HasIndex("BrandId1");
 
-                    b.HasIndex("CategoryId");
+                    b.HasIndex("CategoryId1");
 
-                    b.HasIndex("ColorId");
+                    b.HasIndex("ColorId1");
 
-                    b.HasIndex("MaterialId");
+                    b.HasIndex("MaterialId1");
 
-                    b.HasIndex("StyleId");
+                    b.HasIndex("StyleId1");
 
-                    b.HasIndex("TypeId");
+                    b.HasIndex("TypeId1");
 
                     b.ToTable("Products");
                 });
@@ -416,38 +443,38 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Entities.Product", b =>
                 {
                     b.HasOne("Domain.Entities.ProductBrand", "Brand")
-                        .WithMany()
-                        .HasForeignKey("BrandId")
+                        .WithMany("Products")
+                        .HasForeignKey("BrandId1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Domain.Entities.ProductCategory", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
+                        .WithMany("Products")
+                        .HasForeignKey("CategoryId1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Domain.Entities.ProductColor", "Color")
-                        .WithMany()
-                        .HasForeignKey("ColorId")
+                        .WithMany("Products")
+                        .HasForeignKey("ColorId1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Domain.Entities.ProductMaterial", "Material")
-                        .WithMany()
-                        .HasForeignKey("MaterialId")
+                        .WithMany("Products")
+                        .HasForeignKey("MaterialId1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Domain.Entities.ProductStyle", "Style")
-                        .WithMany()
-                        .HasForeignKey("StyleId")
+                        .WithMany("Products")
+                        .HasForeignKey("StyleId1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Domain.Entities.ProductType", "Type")
-                        .WithMany()
-                        .HasForeignKey("TypeId")
+                        .WithMany("Products")
+                        .HasForeignKey("TypeId1")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -494,14 +521,41 @@ namespace Infrastructure.Migrations
                     b.Navigation("Role");
                 });
 
+            modelBuilder.Entity("Domain.Entities.ProductBrand", b =>
+                {
+                    b.Navigation("Products");
+                });
+
             modelBuilder.Entity("Domain.Entities.ProductCategory", b =>
                 {
                     b.Navigation("ProductCategorySizes");
+
+                    b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("Domain.Entities.ProductColor", b =>
+                {
+                    b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("Domain.Entities.ProductMaterial", b =>
+                {
+                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("Domain.Entities.ProductSize", b =>
                 {
                     b.Navigation("ProductCategorySizes");
+                });
+
+            modelBuilder.Entity("Domain.Entities.ProductStyle", b =>
+                {
+                    b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("Domain.Entities.ProductType", b =>
+                {
+                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("Domain.Entities.Roles", b =>
