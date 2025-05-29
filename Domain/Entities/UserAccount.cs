@@ -32,5 +32,7 @@ namespace Domain.Entities
         public string? otp {  get; set; }
         public DateTime? OtpExpiry { get; set; }
         public Roles Role { get; set; }
+        public ICollection<Order>? Orders { get; set; }
+        public ICollection<Payment>? Payments { get; set; }
     }
 }

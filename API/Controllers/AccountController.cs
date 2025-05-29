@@ -6,6 +6,7 @@ using Application.Validation;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 
 namespace API.Controllers
 {
@@ -78,16 +79,16 @@ namespace API.Controllers
         }
 
         [HttpPost("logout")]
-        public async Task<IActionResult> Logout(string token)
+        public async Task<IActionResult> Logout(TokenDTO token)
         {
             var result = await _userAccountService.Logout(token);
             return Ok(result);
         }
 
         [HttpPost("activate-otp")]
-        public async Task<IActionResult> ActivateAccount([FromQuery] string email, string otp)
+        public async Task<IActionResult> ActivateAccount([FromBody] ActiveAccountDTO activeAccountDTO)
         {
-            if (string.IsNullOrEmpty(otp))
+            if (string.IsNullOrEmpty(activeAccountDTO.otp))
             {
                 return BadRequest(new ResultMessage
                 {
@@ -97,14 +98,14 @@ namespace API.Controllers
                 });
             }
 
-            var result = await _userAccountService.ActiveAccount(email,otp);
+            var result = await _userAccountService.ActiveAccount(activeAccountDTO);
             return Ok(result);
         }
 
         [HttpPost("Reset-otp")]
-        public async Task<IActionResult> ResetOtp([FromQuery] string email)
+        public async Task<IActionResult> ResetOtp([FromBody] ResetOtpDTO resetOtpDTO)
         {
-            var result = await _userAccountService.ResetOtp(email);
+            var result = await _userAccountService.ResetOtp(resetOtpDTO);
             return Ok(result);
         }
     }
