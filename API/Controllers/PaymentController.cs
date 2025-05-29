@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/payment")]
     [ApiController]
     public class PaymentController : ControllerBase
     {
@@ -29,10 +29,10 @@ namespace API.Controllers
                 return BadRequest(result);
         }
 
-        [HttpPost("Search-Payment")]
-        public async Task<IActionResult> SearchPayment([FromBody] PayOsWebhookDTO dto)
+        [HttpPost("search-payment")]
+        public async Task<IActionResult> SearchPayment([FromBody] SearchTransactionDTO dto)
         {
-            var result = await _paymentService.HandleWebhook(dto);
+            var result = await _paymentService.SearchPayment(dto);
             if (result.Success)
                 return Ok(result);
             else

@@ -11,7 +11,7 @@ namespace Application.Interface
     public interface IPaymentService
     {
         Task<ResultMessage> CreatePayment(PaymentDTO dto);
-        Task<ResultMessage> HandleWebhook(PayOsWebhookDTO webhookData);
+        Task<ResultMessage> SearchPayment(SearchTransactionDTO searchTransactionDTO);
 
         Task<ResultMessage> CancelPayment(long orderCode, string reason);
     }

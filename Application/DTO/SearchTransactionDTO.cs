@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Application.DTO
 {
-    public class PayOsWebhookDTO
+    public class SearchTransactionDTO
     {
         public string TransactionId { get; set; }
       

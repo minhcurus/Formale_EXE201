@@ -10,13 +10,13 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     [ApiController]
-    public class AccountController : ControllerBase
+    public class AuthController : ControllerBase
     {
         private readonly IUserAccountService _userAccountService;
 
-        public AccountController(IUserAccountService userAccountService)
+        public AuthController(IUserAccountService userAccountService)
         {
             _userAccountService = userAccountService;
         }
@@ -102,7 +102,7 @@ namespace API.Controllers
             return Ok(result);
         }
 
-        [HttpPost("Reset-otp")]
+        [HttpPost("reset-otp")]
         public async Task<IActionResult> ResetOtp([FromBody] ResetOtpDTO resetOtpDTO)
         {
             var result = await _userAccountService.ResetOtp(resetOtpDTO);

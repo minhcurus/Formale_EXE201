@@ -55,9 +55,9 @@ namespace Application.Service
             };
         }
 
-        public async Task<ResultMessage> HandleWebhook(PayOsWebhookDTO webhook)
+        public async Task<ResultMessage> SearchPayment(SearchTransactionDTO searchTransactionDTO)
         {
-            var payment = await _paymentRepo.GetByTransactionId(webhook.TransactionId);
+            var payment = await _paymentRepo.GetByTransactionId(searchTransactionDTO.TransactionId);
             if (payment == null)
                 return new ResultMessage { Success = false, Message = "Payment not found" };
 
