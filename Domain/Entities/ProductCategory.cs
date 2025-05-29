@@ -11,7 +11,7 @@ namespace Domain.Entities
     public class ProductCategory : BaseEntity
     {
         [Key]
-        public int CategoryId { get; set; }
+        public Guid CategoryId { get; set; }
         public string CategoryName { get; set; }
         public ICollection<ProductCategorySize> ProductCategorySizes { get; set; }
     }

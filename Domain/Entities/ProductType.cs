@@ -11,7 +11,7 @@ namespace Domain.Entities
     public class ProductType : BaseEntity
     {
         [Key]
-        public int TypeId { get; set; }
+        public Guid TypeId { get; set; }
         public string TypeName { get; set; }
     }
 }
