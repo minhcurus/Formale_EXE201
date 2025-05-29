@@ -20,6 +20,10 @@ namespace Infrastructure
         #region DbSet
         public DbSet<UserAccount> Users { get; set; }
         public DbSet<Roles> Roles { get; set; }
+        public DbSet<Payment> Payments { get; set; }
+
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<PremiumPackage> PremiumPackages { get; set; }
 
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductSize> ProductSizes { get; set; }
@@ -75,16 +79,54 @@ namespace Infrastructure
 
             modelBuilder.Entity<Roles>()
                 .HasMany(r => r.Users)
-                .WithOne()
+                .WithOne(u => u.Role)
                 .HasForeignKey(u => u.RoleId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Payment - User
+            modelBuilder.Entity<Payment>()
+                .HasOne(p => p.UserAccount)
+                .WithMany(u => u.Payments)
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
             //modelBuilder.Entity<Roles>()
             //    .HasMany(r => r.Users)
             //    .WithOne(u => u.Role)
             //    .HasForeignKey(u => u.RoleId)
             //    .OnDelete(DeleteBehavior.Restrict);
 
+
+            // Payment - Order
+            modelBuilder.Entity<Payment>()
+                .HasOne(p => p.Order)
+                .WithMany(o => o.Payments)
+                .HasForeignKey(p => p.OrderId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Payment - PremiumPackage
+            modelBuilder.Entity<Payment>()
+                .HasOne(p => p.PremiumPackage)
+                .WithMany(pp => pp.Payments)
+                .HasForeignKey(p => p.PremiumPackageId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.UserAccount)
+                .WithMany(u => u.Orders)
+                .HasForeignKey(o => o.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Payment>(entity =>
+            {
+                entity.Property(p => p.Description).HasMaxLength(500);
+                entity.Property(p => p.BuyerName).HasMaxLength(200);
+                entity.Property(p => p.BuyerEmail).HasMaxLength(200);
+                entity.Property(p => p.BuyerPhone).HasMaxLength(20);
+                entity.Property(p => p.BuyerAddress).HasMaxLength(500);
+                entity.Property(p => p.CancelUrl).HasMaxLength(1000);
+                entity.Property(p => p.ReturnUrl).HasMaxLength(1000);
+                entity.Property(p => p.PaymentUrl).HasMaxLength(1000);
+            });
 
 
 

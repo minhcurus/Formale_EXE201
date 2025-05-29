@@ -165,9 +165,9 @@ namespace Application.Service
 
         }
 
-        public async Task<ResultMessage> Logout(string token)
+        public async Task<ResultMessage> Logout(TokenDTO tokenDTO)
         {
-            var user = await _repository.GetByToken(token);
+            var user = await _repository.GetByToken(tokenDTO.token);
             if (user == null)
             {
                 return new ResultMessage
@@ -218,9 +218,9 @@ namespace Application.Service
             return tokenHandler.WriteToken(token);
         }
 
-        public async Task<ResultMessage> ActiveAccount(string email,string otp)
+        public async Task<ResultMessage> ActiveAccount(ActiveAccountDTO accountDTO)
         {
-            var check = await _repository.GetEmail(email);
+            var check = await _repository.GetEmail(accountDTO.email);
             if (check == null)
             {
                 return new ResultMessage
@@ -231,7 +231,7 @@ namespace Application.Service
                 };
             }
 
-            var getOtp = await _repository.GetOtp(otp);
+            var getOtp = await _repository.GetOtp(accountDTO.otp);
             if (getOtp == null)
             {
                 return new ResultMessage
@@ -267,9 +267,9 @@ namespace Application.Service
 
         }
 
-        public async Task<ResultMessage> ResetOtp(string email)
+        public async Task<ResultMessage> ResetOtp(ResetOtpDTO resetOtpDTO)
         {            
-            var check = await _repository.GetEmail(email);
+            var check = await _repository.GetEmail(resetOtpDTO.email);
             if (check == null)
             {
                 return new ResultMessage
@@ -281,11 +281,10 @@ namespace Application.Service
             }
             var otp = OTPGenerator.GenerateOTP();
 
-
             check.otp = otp;
             check.OtpExpiry = DateTime.UtcNow.AddMinutes(10);
             await _repository.UpdateAsync(check);
-            await _emailService.SendEmailAsync(email, "Mã kích hoạt tài khoản", $"Mã OTP của bạn là: {otp}");
+            await _emailService.SendEmailAsync(resetOtpDTO.email, "Mã kích hoạt tài khoản", $"Mã OTP của bạn là: {otp}");
             return new ResultMessage
             {
                 Success = true,
