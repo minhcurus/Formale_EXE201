@@ -7,11 +7,14 @@ using Infrastructure.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using VaccinceCenter.Repositories.Base;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 //jwt
 builder.Services.Configure<JwtSetting>(
@@ -26,9 +29,22 @@ builder.Services.Configure<EmailSettings>(
 //DI Service
 builder.Services.AddScoped<IUserAccountService, UserAccountService>();
 builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 
 //DI Repository
+builder.Services.AddScoped(typeof(GenericRepository<>));
 builder.Services.AddScoped<UserAccountRepository>();
+builder.Services.AddScoped<ProductRepository>();
+builder.Services.AddScoped<ProductBrandRepository>();
+builder.Services.AddScoped<ProductCategoryRepository>();
+builder.Services.AddScoped<ProductColorRepository>();
+builder.Services.AddScoped<ProductMaterialRepository>();
+builder.Services.AddScoped<ProductSizeRepository>();
+builder.Services.AddScoped<ProductStyleRepository>();
+builder.Services.AddScoped<ProductTypeRepository>();
+
+
 
 builder.Services.AddCors(options =>
 {

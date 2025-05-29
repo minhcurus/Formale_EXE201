@@ -11,7 +11,7 @@ namespace Domain.Entities
     public class ProductMaterial : BaseEntity
     {
         [Key]
-        public int MaterialId { get; set; }
+        public Guid MaterialId { get; set; }
         public string MaterialName { get; set; }
     }
 }

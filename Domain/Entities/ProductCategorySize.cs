@@ -9,10 +9,10 @@ namespace Domain.Entities
 {
     public class ProductCategorySize : BaseEntity
     {
-        public int CategoryId { get; set; }
+        public Guid CategoryId { get; set; }
         public ProductCategory Category { get; set; }
 
-        public int SizeId { get; set; }
+        public Guid SizeId { get; set; }
         public ProductSize Size { get; set; }
     }
 }

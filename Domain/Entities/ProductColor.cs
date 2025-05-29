@@ -11,7 +11,7 @@ namespace Domain.Entities
     public class ProductColor : BaseEntity
     {
         [Key]
-        public int ColorId { get; set; }
+        public Guid ColorId { get; set; }
         public string ColorName { get; set; }
     }
 }

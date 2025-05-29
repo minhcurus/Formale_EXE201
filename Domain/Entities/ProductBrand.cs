@@ -11,7 +11,7 @@ namespace Domain.Entities
     public class ProductBrand : BaseEntity
     {
         [Key]
-        public int BrandId { get; set; }
+        public Guid BrandId { get; set; }
         public string BrandName { get; set; }
     }
 }
