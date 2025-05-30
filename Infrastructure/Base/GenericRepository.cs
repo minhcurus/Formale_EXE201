@@ -134,8 +134,11 @@ namespace VaccinceCenter.Repositories.Base
             }
 
             return entity;
-
         }
+
+        public IQueryable<T> Query(bool tracking = false)
+    => tracking ? _context.Set<T>() : _context.Set<T>().AsNoTracking();
+
     }
 
 }

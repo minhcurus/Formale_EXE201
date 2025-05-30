@@ -15,5 +15,6 @@ namespace Application.Interface
         Task<ProductResponseDto> CreateProductAsync(ProductRequestDto p);
         Task<ProductResponseDto> UpdateAsync(Guid id, ProductUpdateDto product);
         Task<bool> DeleteAsync(Guid id);
+        Task<PaginatedResultDto<ProductResponseDto>> SearchAsync(ProductQueryDto dto);
     }
 }
