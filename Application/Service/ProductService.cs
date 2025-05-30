@@ -8,6 +8,7 @@ using Application.Interface;
 using AutoMapper;
 using Domain.Entities;
 using Infrastructure.Repository;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using VaccinceCenter.Repositories.Base;
 
@@ -139,5 +140,52 @@ namespace Application.Service
             await _productRepository.UpdateAsync(product);
             return true;
         }
+
+        public async Task<PaginatedResultDto<ProductResponseDto>> SearchAsync(ProductQueryDto dto)
+        {
+            var q = _productRepository.Query()            // no-tracking IQueryable<Product>
+                                      .Where(p => !p.IsDeleted);
+
+            if (!string.IsNullOrWhiteSpace(dto.Keyword))
+                q = q.Where(p => EF.Functions.Like(p.Name, $"%{dto.Keyword}%"));
+
+            if (dto.BrandId.HasValue) q = q.Where(p => p.BrandId == dto.BrandId);
+            if (dto.ColorId.HasValue) q = q.Where(p => p.ColorId == dto.ColorId);
+            if (dto.StyleId.HasValue) q = q.Where(p => p.StyleId == dto.StyleId);
+            if (dto.CategoryId.HasValue) q = q.Where(p => p.CategoryId == dto.CategoryId);
+            if (dto.MaterialId.HasValue) q = q.Where(p => p.MaterialId == dto.MaterialId);
+            if (dto.TypeId.HasValue) q = q.Where(p => p.TypeId == dto.TypeId);
+
+            var totalRecords = await q.CountAsync();
+            if (totalRecords == 0)
+                return new PaginatedResultDto<ProductResponseDto>(Array.Empty<ProductResponseDto>(), 0, 0, dto.Page, dto.PageSize);
+
+            var page = dto.Page < 1 ? 1 : dto.Page;
+            var pageSize = dto.PageSize < 1 ? 12 : dto.PageSize;
+
+            var items = await q.OrderByDescending(p => p.CreatedAt)
+                               .Skip((page - 1) * pageSize)
+                               .Take(pageSize)
+                               .Select(p => new ProductResponseDto
+                               {
+                                   Id = p.ProductId,
+                                   Name = p.Name,
+                                   Price = p.Price,
+                                   ImageURL = p.ImageURL,
+                                   Brand = p.Brand.BrandName,
+                                   Category = p.Category.CategoryName,
+                                   Color = p.Color.ColorName,
+                                   Material = p.Material.MaterialName,
+                                   Style = p.Style.StyleName,
+                                   Type = p.Type.TypeName
+                               })
+                               .ToListAsync();
+
+            var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+
+            return new PaginatedResultDto<ProductResponseDto>(items, totalRecords, totalPages, page, pageSize);
+        }
+
+
     }
 }

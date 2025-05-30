@@ -77,6 +77,11 @@ namespace API.Controllers
                 ? Ok(new { message = "Product deleted successfully." })
                 : NotFound(new { message = "Product not found." });
         }
+
+        // GET /api/products/search
+        [HttpGet("search")]
+        public async Task<ActionResult<PaginatedResultDto<ProductResponseDto>>> Search([FromQuery] ProductQueryDto query)
+            => Ok(await _service.SearchAsync(query));
     }
 
 }
