@@ -21,7 +21,7 @@ namespace Domain.Entities
         public Guid ColorId { get; set; }
         public ProductColor Color { get; set; }
 
-        public string ImageURL { get; set; }
+        public string? ImageURL { get; set; }
         public string? Description { get; set; }
         public Guid StyleId { get; set; } // PHONG CÁCH
         public ProductStyle Style { get; set; }
