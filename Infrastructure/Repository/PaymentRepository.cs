@@ -14,6 +14,16 @@ namespace Infrastructure.Repository
     {
         public PaymentRepository(AppDBContext context) : base(context) { }
 
+        public async Task<List<Payment>> GetAll()
+        {
+            return await _context.Payments.ToListAsync();
+        }
+
+        public async Task<Payment> GetById(int id)
+        {
+            return await _context.Payments.FirstOrDefaultAsync(e => e.UserId == id);
+        }
+
         public async Task<Payment> GetByTransactionId(string transactionId)
         {
             return await _context.Payments.FirstOrDefaultAsync(p => p.TransactionId == transactionId);
@@ -22,6 +32,20 @@ namespace Infrastructure.Repository
         public async Task<Payment> GetByOrderCode(long orderCode)
         {
             return await _context.Payments.FirstOrDefaultAsync(p => p.OrderCode == orderCode);
+        }
+
+        public async Task<int> UpdateStatusAsync(long orderCode, Status newStatus)
+        {
+            var payment = await _context.Payments.FirstOrDefaultAsync(p => p.OrderCode == orderCode);
+            if (payment == null) return 0;
+
+            payment.Status = newStatus;
+            if (newStatus == Status.COMPLETED)
+            {
+                payment.PaidAt = DateTime.UtcNow;
+            }
+
+            return await _context.SaveChangesAsync();
         }
 
     }

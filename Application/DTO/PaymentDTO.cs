@@ -20,6 +20,10 @@ namespace Application.DTO
         public string BuyerPhone { get; set; }
         public string BuyerAddress { get; set; }
         public PaymentMethod Method { get; set; }
+
+        public int? OrderId { get; set; }
+        public string? TransactionId { get; set; }
+        public long OrderCode { get; set; }
     }
 
 }
