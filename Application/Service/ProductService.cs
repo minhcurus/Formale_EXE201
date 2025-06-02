@@ -25,9 +25,7 @@ namespace Application.Service
         private readonly ProductStyleRepository _productStyleRepository;
         private readonly ProductTypeRepository _productTypeRepository;
 
-
-
-
+        private readonly IOpenRouterService _ai;
         private readonly ICloudinaryService _cloudinaryService;
         private readonly IMapper _mapper;
 
@@ -39,7 +37,8 @@ namespace Application.Service
             ProductSizeRepository productSizeRepository,
             ProductStyleRepository productStyleRepository,
             ProductTypeRepository productTypeRepository,
-            ICloudinaryService cloudinaryService, 
+            IOpenRouterService ai,
+            ICloudinaryService cloudinaryService,
             IMapper mapper)
         {
             _productRepository = productRepository;
@@ -50,6 +49,7 @@ namespace Application.Service
             _productSizeRepository = productSizeRepository;
             _productStyleRepository = productStyleRepository;
             _productTypeRepository = productTypeRepository;
+            _ai = ai;
             _cloudinaryService = cloudinaryService;
             _mapper = mapper;
         }
@@ -121,13 +121,19 @@ namespace Application.Service
         public async Task<ProductResponseDto> UpdateAsync(Guid id, ProductUpdateDto dto)
         {
             var product = await _productRepository.GetByIdAsync(id);
-            if (product == null) return null;                     
+            if (product == null) return null;
 
             _mapper.Map(dto, product);
+            if (dto.ImageFile != null)
+            {
+                string imageUrl = await _cloudinaryService.UploadImageAsync(dto.ImageFile);
+                product.ImageURL = imageUrl;
+            }
+
             await _productRepository.UpdateAsync(product);
 
             var res = _mapper.Map<ProductResponseDto>(product);
-            await MapperProduct(product, res);          
+            await MapperProduct(product, res);
             return res;
         }
 
@@ -186,6 +192,75 @@ namespace Application.Service
             return new PaginatedResultDto<ProductResponseDto>(items, totalRecords, totalPages, page, pageSize);
         }
 
+
+        /// <summary>
+        /// Gợi ý combo đồ dựa trên mô tả (prompt) người dùng.
+        /// </summary>
+        public async Task<OutfitSuggestionDto?> SuggestOutfitAsync(string prompt)
+        {
+            // 1. Hỏi AI xem style nào phù hợp
+            var styleName = await _ai.ClassifyAsync(prompt);
+            if (string.IsNullOrEmpty(styleName)) return null;
+
+            // 2. Lấy StyleId & CategoryIds
+            var style = await _productStyleRepository.Query()
+                                                       .FirstOrDefaultAsync(s => s.StyleName == styleName);
+            if (style is null) return null;
+
+            var categories = await _productCategoryRepository.GetAllAsync();
+            var catTops = categories.First(c => c.CategoryName == "Tops").CategoryId;
+            var catBottoms = categories.First(c => c.CategoryName == "Bottoms").CategoryId;
+            var catFootwear = categories.First(c => c.CategoryName == "Footwear").CategoryId;
+            var catAccessory = categories.First(c => c.CategoryName == "Accessories").CategoryId;
+
+            // 3. Chọn 1 sản phẩm cho mỗi category (mới nhất, bạn đổi rule tuỳ ý)
+            async Task<Product?> PickAsync(Guid catId) =>
+    await _productRepository.Query()
+        .Where(p => p.CategoryId == catId && p.StyleId == style.StyleId && !p.IsDeleted)
+        .Include(p => p.Brand)
+        .Include(p => p.Category)
+        .Include(p => p.Color)
+        .Include(p => p.Material)
+        .Include(p => p.Style)
+        .Include(p => p.Type)
+        .OrderByDescending(p => p.CreatedAt)
+        .FirstOrDefaultAsync();
+
+
+            var top = await PickAsync(catTops);
+            var bottom = await PickAsync(catBottoms);
+            var footwear = await PickAsync(catFootwear);
+            var accessory = await PickAsync(catAccessory);
+
+            //if (top is null || bottom is null || footwear is null || accessory is null)
+            //    return null; // thiếu item nào đó
+
+            // 4. Map ra DTO và return
+            ProductResponseDto? Map(Product? p) => p == null ? null : new ProductResponseDto
+            {
+                Id = p.ProductId,
+                Name = p.Name,
+                Price = p.Price,
+                ImageURL = p.ImageURL,
+                Brand = p.Brand.BrandName,
+                Category = p.Category.CategoryName,
+                Color = p.Color.ColorName,
+                Material = p.Material.MaterialName,
+                Style = p.Style.StyleName,
+                Type = p.Type.TypeName,
+                Description = p.Description
+
+            };
+
+            return new OutfitSuggestionDto
+            {
+                Style = styleName,
+                Tops = Map(top),
+                Bottoms = Map(bottom),
+                Footwear = Map(footwear),
+                Accessories = Map(accessory)
+            };
+        }
 
     }
 }

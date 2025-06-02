@@ -15,16 +15,33 @@ namespace API.Controllers
         // GET /api/products
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ProductResponseDto>>> GetAll()
-            => Ok(await _service.GetAllAsync());
+        {
+            try
+            {
+                var products = await _service.GetAllAsync();
+                return Ok(products);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error retrieving products.", error = ex.Message });
+            }
+        }
 
         // GET /api/products/{id}
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<ProductResponseDto>> GetById(Guid id)
         {
-            var product = await _service.GetByIdAsync(id);
-            return product is null
-                ? NotFound(new { message = "Product not found." })
-                : Ok(product);
+            try
+            {
+                var product = await _service.GetByIdAsync(id);
+                return product is null
+                    ? NotFound(new { message = "Product not found." })
+                    : Ok(product);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error retrieving product.", error = ex.Message });
+            }
         }
 
         // POST /api/products
@@ -43,7 +60,7 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new { message = "Create failed.", error = ex.Message });
             }
         }
 
@@ -64,7 +81,7 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return BadRequest(new { message = "Update failed.", error = ex.Message });
             }
         }
 
@@ -72,16 +89,52 @@ namespace API.Controllers
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var result = await _service.DeleteAsync(id);
-            return result
-                ? Ok(new { message = "Product deleted successfully." })
-                : NotFound(new { message = "Product not found." });
+            try
+            {
+                var result = await _service.DeleteAsync(id);
+                return result
+                    ? Ok(new { message = "Product deleted successfully." })
+                    : NotFound(new { message = "Product not found." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Delete failed.", error = ex.Message });
+            }
         }
 
         // GET /api/products/search
         [HttpGet("search")]
         public async Task<ActionResult<PaginatedResultDto<ProductResponseDto>>> Search([FromQuery] ProductQueryDto query)
-            => Ok(await _service.SearchAsync(query));
+        {
+            try
+            {
+                var result = await _service.SearchAsync(query);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Search failed.", error = ex.Message });
+            }
+        }
+
+        // POST /api/products/suggest
+        [HttpPost("suggest")]
+        public async Task<IActionResult> SuggestOutfit([FromBody] string prompt)
+        {
+            try
+            {
+                var combo = await _service.SuggestOutfitAsync(prompt);
+                return Ok(new
+                {
+                    message = "Outfit suggested successfully.",
+                    data = combo
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "Suggest outfit failed.", error = ex.Message });
+            }
+        }
     }
 
 }
