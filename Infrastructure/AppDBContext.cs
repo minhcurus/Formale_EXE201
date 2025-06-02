@@ -228,7 +228,20 @@ namespace Infrastructure
                 .HasMany(ps => ps.ProductCategorySizes)
                 .WithOne(pcs => pcs.Size)
                 .HasForeignKey(pcs => pcs.SizeId);
+
+            string schema = "sps13686_hiTech";
+
+            modelBuilder.Entity<Product>().ToTable("Products", schema);
+            modelBuilder.Entity<ProductBrand>().ToTable("ProductBrands", schema);
+            modelBuilder.Entity<ProductCategory>().ToTable("ProductCategories", schema);
+            modelBuilder.Entity<ProductColor>().ToTable("ProductColors", schema);
+            modelBuilder.Entity<ProductMaterial>().ToTable("ProductMaterials", schema);
+            modelBuilder.Entity<ProductSize>().ToTable("ProductSizes", schema);
+            modelBuilder.Entity<ProductStyle>().ToTable("ProductStyles", schema);
+            modelBuilder.Entity<ProductType>().ToTable("ProductTypes", schema);
+            modelBuilder.Entity<ProductCategorySize>().ToTable("ProductCategorySizes", schema);
+
         }
-        
+
     }
 }

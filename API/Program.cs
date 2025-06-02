@@ -12,9 +12,11 @@ using VaccinceCenter.Repositories.Base;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//Database Context
 builder.Services.AddDbContext<AppDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+//AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 //jwt
@@ -29,6 +31,15 @@ builder.Services.Configure<EmailSettings>(
 builder.Services.Configure<PayOsSetting>(builder.Configuration.GetSection("PayOsConfig"));
 
 
+//OpenRouter
+builder.Services.AddHttpClient("OpenRouter", c =>
+{
+    c.BaseAddress = new Uri("https://openrouter.ai/");
+    c.DefaultRequestHeaders.Authorization =
+        new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", builder.Configuration["OpenRouter:ApiKey"]);
+    c.DefaultRequestHeaders.Accept.Add(new("application/json"));
+});
+
 //DI Service
 builder.Services.AddScoped<IUserAccountService, UserAccountService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
@@ -36,6 +47,8 @@ builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 builder.Services.AddHttpClient<PayOsService>();
+builder.Services.AddHttpClient<OpenRouterService>();
+builder.Services.AddScoped<IOpenRouterService, OpenRouterService>();
 
 
 //DI Repository
