@@ -218,6 +218,38 @@ namespace Infrastructure
                 .WithMany()
                 .HasForeignKey(p => p.TypeId);
 
+            //PremiumPackage
+            modelBuilder.Entity<PremiumPackage>().HasData(
+                new PremiumPackage
+                {
+                    Id = 1,
+                    Tier = Domain.Enum.PremiumPackageTier.Bronze,
+                    Name = "Bronze Package",
+                    Description = "Gói cơ bản, hỗ trợ hạn chế.",
+                    Price = 50000,
+                    DurationInDays = 7
+                },
+                new PremiumPackage
+                {
+                    Id = 2,
+                    Tier = Domain.Enum.PremiumPackageTier.Silver,
+                    Name = "Silver Package",
+                    Description = "Gói nâng cao với nhiều tính năng hơn.",
+                    Price = 120000,
+                    DurationInDays = 30
+                },
+                new PremiumPackage
+                {
+                    Id = 3,
+                    Tier = Domain.Enum.PremiumPackageTier.Gold,
+                    Name = "Gold Package",
+                    Description = "Gói cao cấp đầy đủ tính năng.",
+                    Price = 300000,
+                    DurationInDays = 90
+                }
+            );
+
+
             // Cấu hình many-to-many giữa ProductCategory và ProductSize
             modelBuilder.Entity<ProductCategory>()
                 .HasMany(pc => pc.ProductCategorySizes)

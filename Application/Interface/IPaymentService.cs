@@ -12,7 +12,9 @@ namespace Application.Interface
     {
         Task<ResultMessage> CreatePayment(PaymentDTO dto);
         Task<ResultMessage> SearchPayment(SearchTransactionDTO searchTransactionDTO);
-
+        Task<ResultMessage> UpdatePaymentStatus(long orderCode, Status newStatus);
+        Task<List<PaymentDTO>> GetAllPayment();
+        Task<ResultMessage> GetPaymentByUserId(int id);
         Task<ResultMessage> CancelPayment(long orderCode, string reason);
     }
 }

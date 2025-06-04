@@ -1,4 +1,5 @@
 using System.Text;
+using API.Mapper;
 using Application.Interface;
 using Application.Service;
 using Application.Settings;
@@ -44,6 +45,9 @@ builder.Services.AddHttpClient("OpenRouter", c =>
 builder.Services.AddScoped<IUserAccountService, UserAccountService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IPremiumService, PremiumService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 builder.Services.AddHttpClient<PayOsService>();
@@ -53,8 +57,12 @@ builder.Services.AddScoped<IOpenRouterService, OpenRouterService>();
 
 //DI Repository
 builder.Services.AddScoped(typeof(GenericRepository<>));
+builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
 builder.Services.AddScoped<UserAccountRepository>();
+builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<OrderRepository>();
+builder.Services.AddScoped<PremiumRepository>();
 builder.Services.AddScoped<ProductRepository>();
 builder.Services.AddScoped<ProductBrandRepository>();
 builder.Services.AddScoped<ProductCategoryRepository>();
