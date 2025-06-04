@@ -263,6 +263,10 @@ namespace Infrastructure
 
             string schema = "sps13686_hiTech";
 
+
+            modelBuilder.Entity<Order>().ToTable("Orders", schema);
+            modelBuilder.Entity<Payment>().ToTable("Payments", schema);
+            modelBuilder.Entity<PremiumPackage>().ToTable("PremiumPackages", schema);
             modelBuilder.Entity<Product>().ToTable("Products", schema);
             modelBuilder.Entity<ProductBrand>().ToTable("ProductBrands", schema);
             modelBuilder.Entity<ProductCategory>().ToTable("ProductCategories", schema);
@@ -272,6 +276,8 @@ namespace Infrastructure
             modelBuilder.Entity<ProductStyle>().ToTable("ProductStyles", schema);
             modelBuilder.Entity<ProductType>().ToTable("ProductTypes", schema);
             modelBuilder.Entity<ProductCategorySize>().ToTable("ProductCategorySizes", schema);
+            modelBuilder.Entity<UserAccount>().ToTable("Users", schema);
+            modelBuilder.Entity<Roles>().ToTable("Roles", schema);
 
         }
 
