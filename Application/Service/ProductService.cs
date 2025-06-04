@@ -58,24 +58,23 @@ namespace Application.Service
         {
             var products = await _productRepository.GetAllAsync();
 
-            var brands = await _productBrandRepository.GetAllAsync();
-            var categories = await _productCategoryRepository.GetAllAsync();
-            var colors = await _productColorRepository.GetAllAsync();
-            var materials = await _productMaterialRepository.GetAllAsync();
-            var styles = await _productStyleRepository.GetAllAsync();
-            var types = await _productTypeRepository.GetAllAsync();
+            // Tối ưu lookup bằng Dictionary
+            var brands = (await _productBrandRepository.GetAllAsync()).ToDictionary(x => x.BrandId, x => x.BrandName);
+            var colors = (await _productColorRepository.GetAllAsync()).ToDictionary(x => x.ColorId, x => x.ColorName);
+            var materials = (await _productMaterialRepository.GetAllAsync()).ToDictionary(x => x.MaterialId, x => x.MaterialName);
+            var styles = (await _productStyleRepository.GetAllAsync()).ToDictionary(x => x.StyleId, x => x.StyleName);
+            var types = (await _productTypeRepository.GetAllAsync()).ToDictionary(x => x.TypeId, x => x.TypeName);
+            var categories = (await _productCategoryRepository.GetAllAsync()).ToDictionary(x => x.CategoryId, x => x.CategoryName);
 
             var result = products.Select(product =>
             {
                 var dto = _mapper.Map<ProductResponseDto>(product);
-
-                dto.Brand = brands.FirstOrDefault(x => x.BrandId == product.BrandId)?.BrandName ?? "";
-                dto.Category = categories.FirstOrDefault(x => x.CategoryId == product.CategoryId)?.CategoryName ?? "";
-                dto.Color = colors.FirstOrDefault(x => x.ColorId == product.ColorId)?.ColorName ?? "";
-                dto.Material = materials.FirstOrDefault(x => x.MaterialId == product.MaterialId)?.MaterialName ?? "";
-                dto.Style = styles.FirstOrDefault(x => x.StyleId == product.StyleId)?.StyleName ?? "";
-                dto.Type = types.FirstOrDefault(x => x.TypeId == product.TypeId)?.TypeName ?? "";
-
+                dto.Brand = brands.TryGetValue(product.BrandId, out var brand) ? brand : "";
+                dto.Color = colors.TryGetValue(product.ColorId, out var color) ? color : "";
+                dto.Material = materials.TryGetValue(product.MaterialId, out var material) ? material : "";
+                dto.Style = styles.TryGetValue(product.StyleId, out var style) ? style : "";
+                dto.Type = types.TryGetValue(product.TypeId, out var type) ? type : "";
+                dto.Category = categories.TryGetValue(product.CategoryId, out var category) ? category : "";
                 return dto;
             }).ToList();
 
@@ -97,10 +96,12 @@ namespace Application.Service
         {
 
             var product = _mapper.Map<Product>(dto);
-            string imageUrl = await _cloudinaryService.UploadImageAsync(dto.ImageFile);
-            product.ImageURL = imageUrl;
+            if (dto.ImageFile != null)
+                product.ImageURL = await _cloudinaryService.UploadImageAsync(dto.ImageFile);
+            else
+                product.ImageURL = "";           // hoặc URL ảnh mặc định
 
-            _productRepository.Create(product);
+             await _productRepository.AddAsync(product);
 
             var res = _mapper.Map<ProductResponseDto>(product);
             await MapperProduct(product, res);
@@ -120,12 +121,25 @@ namespace Application.Service
 
         public async Task<ProductResponseDto> UpdateAsync(Guid id, ProductUpdateDto dto)
         {
+
             var product = await _productRepository.GetByIdAsync(id);
             if (product == null) return null;
 
             _mapper.Map(dto, product);
+
             if (dto.ImageFile != null)
             {
+                // Tách PublicId từ URL hiện tại
+                if (!string.IsNullOrEmpty(product.ImageURL))
+                {
+                    var uri = new Uri(product.ImageURL);
+                    var segments = uri.AbsolutePath.Split('/');
+                    var fileName = segments.Last(); 
+                    var publicId = $"products/{fileName.Substring(0, fileName.LastIndexOf('.'))}"; 
+
+                    await _cloudinaryService.DeleteImageAsync(publicId); 
+                }
+
                 string imageUrl = await _cloudinaryService.UploadImageAsync(dto.ImageFile);
                 product.ImageURL = imageUrl;
             }
@@ -174,7 +188,7 @@ namespace Application.Service
                                .Take(pageSize)
                                .Select(p => new ProductResponseDto
                                {
-                                   Id = p.ProductId,
+                                   ProductId = p.ProductId,
                                    Name = p.Name,
                                    Price = p.Price,
                                    ImageURL = p.ImageURL,
@@ -238,7 +252,7 @@ namespace Application.Service
             // 4. Map ra DTO và return
             ProductResponseDto? Map(Product? p) => p == null ? null : new ProductResponseDto
             {
-                Id = p.ProductId,
+                ProductId = p.ProductId,
                 Name = p.Name,
                 Price = p.Price,
                 ImageURL = p.ImageURL,

@@ -36,7 +36,12 @@ namespace Application.Service
             var result = await _cloudinary.UploadAsync(uploadParams);
             return result.SecureUrl.ToString();
         }
-
+        public async Task<bool> DeleteImageAsync(string publicId)
+        {
+            var deletionParams = new DeletionParams(publicId);
+            var result = await _cloudinary.DestroyAsync(deletionParams);
+            return result.Result == "ok";
+        }
 
     }
 }

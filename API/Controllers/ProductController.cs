@@ -52,7 +52,7 @@ namespace API.Controllers
             try
             {
                 var created = await _service.CreateProductAsync(dto);
-                return CreatedAtAction(nameof(GetById), new { id = created.Id }, new
+                return CreatedAtAction(nameof(GetById), new { id = created.ProductId }, new
                 {
                     message = "Product created successfully.",
                     data = created
@@ -66,7 +66,7 @@ namespace API.Controllers
 
         // PUT /api/products/{id}
         [HttpPut("{id:guid}")]
-        public async Task<ActionResult<ProductResponseDto>> Update(Guid id, [FromBody] ProductUpdateDto dto)
+        public async Task<ActionResult<ProductResponseDto>> Update(Guid id, [FromForm] ProductUpdateDto dto)
         {
             try
             {

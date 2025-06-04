@@ -37,6 +37,14 @@ namespace VaccinceCenter.Repositories.Base
             return await _context.SaveChangesAsync();
         }
 
+        public async Task AddAsync(T entity) // dùng cho products
+        {
+            _context.Set<T>().Add(entity);
+            await _context.SaveChangesAsync();
+        }
+
+
+
         public void Update(T entity)
         {
             var tracker = _context.Attach(entity);
