@@ -13,7 +13,7 @@ namespace Application.Interface
         Task<List<ProductResponseDto>> GetAllAsync();
         Task<ProductResponseDto> GetByIdAsync(Guid id);
         Task<ProductResponseDto> CreateProductAsync(ProductRequestDto p);
-        Task<ProductResponseDto> UpdateAsync(Guid id, ProductUpdateDto product);
+        Task<ProductResponseDto> UpdateAsync(Guid id, ProductRequestDto product);
         Task<bool> DeleteAsync(Guid id);
         Task<PaginatedResultDto<ProductResponseDto>> SearchAsync(ProductQueryDto dto);
         Task<OutfitSuggestionDto?> SuggestOutfitAsync(string prompt);

@@ -10,8 +10,13 @@ namespace API.Mapper
         {
             //Product
             CreateMap<ProductRequestDto, Product>();
-            CreateMap<ProductUpdateDto, Product>();
-            CreateMap<Product, ProductResponseDto>();
+            CreateMap<Product, ProductResponseDto>()
+                .ForMember(d => d.Brand, opt => opt.MapFrom(s => s.Brand.BrandName))
+                .ForMember(d => d.Category, opt => opt.MapFrom(s => s.Category.CategoryName))
+                .ForMember(d => d.Color, opt => opt.MapFrom(s => s.Color.ColorName))
+                .ForMember(d => d.Material, opt => opt.MapFrom(s => s.Material.MaterialName))
+                .ForMember(d => d.Style, opt => opt.MapFrom(s => s.Style.StyleName))
+                .ForMember(d => d.Type, opt => opt.MapFrom(s => s.Type.TypeName));
 
             //User
             CreateMap<UserAccount, UserResponse>();
