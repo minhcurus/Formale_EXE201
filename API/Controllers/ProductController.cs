@@ -60,13 +60,19 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = "Create failed.", error = ex.Message });
+                var baseError = ex.GetBaseException().Message;
+                return BadRequest(new
+                {
+                    message = "Create failed.",
+                    error = baseError
+                });
             }
+
         }
 
         // PUT /api/products/{id}
         [HttpPut("{id:guid}")]
-        public async Task<ActionResult<ProductResponseDto>> Update(Guid id, [FromForm] ProductUpdateDto dto)
+        public async Task<ActionResult<ProductResponseDto>> Update(Guid id, [FromForm] ProductRequestDto dto)
         {
             try
             {

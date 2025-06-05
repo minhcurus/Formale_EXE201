@@ -8,6 +8,7 @@ using Application.Interface;
 using AutoMapper;
 using Domain.Entities;
 using Infrastructure.Repository;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using VaccinceCenter.Repositories.Base;
@@ -54,11 +55,47 @@ namespace Application.Service
             _mapper = mapper;
         }
 
+        // Helper: Query product kèm Include liên quan
+        private IQueryable<Product> GetProductWithIncludes()
+        {
+            return _productRepository.Query()
+                .Include(p => p.Brand)
+                .Include(p => p.Category)
+                .Include(p => p.Color)
+                .Include(p => p.Material)
+                .Include(p => p.Style)
+                .Include(p => p.Type);
+        }
+
+        // Helper: Map các tên (Brand, Color, etc) cho ProductResponseDto từ các repo
+        private async Task MapProductNamesAsync(Product product, ProductResponseDto dto)
+        {
+            dto.Brand = (await _productBrandRepository.GetByIdAsync(product.BrandId))?.BrandName ?? "";
+            dto.Category = (await _productCategoryRepository.GetByIdAsync(product.CategoryId))?.CategoryName ?? "";
+            dto.Color = (await _productColorRepository.GetByIdAsync(product.ColorId))?.ColorName ?? "";
+            dto.Material = (await _productMaterialRepository.GetByIdAsync(product.MaterialId))?.MaterialName ?? "";
+            dto.Style = (await _productStyleRepository.GetByIdAsync(product.StyleId))?.StyleName ?? "";
+            dto.Type = (await _productTypeRepository.GetByIdAsync(product.TypeId))?.TypeName ?? "";
+        }
+
+        // Helper: Upload ảnh lên Cloudinary, xóa ảnh cũ nếu có
+        private async Task<string> UpdateProductImageAsync(Product product, IFormFile newImage)
+        {
+            if (!string.IsNullOrEmpty(product.ImageURL))
+            {
+                var uri = new Uri(product.ImageURL);
+                var fileName = uri.Segments.Last();
+                var publicId = $"products/{fileName.Substring(0, fileName.LastIndexOf('.'))}";
+                await _cloudinaryService.DeleteImageAsync(publicId);
+            }
+            return await _cloudinaryService.UploadImageAsync(newImage);
+        }
+
         public async Task<List<ProductResponseDto>> GetAllAsync()
         {
             var products = await _productRepository.GetAllAsync();
 
-            // Tối ưu lookup bằng Dictionary
+            // Lấy dữ liệu lookup 1 lần cho tất cả sản phẩm
             var brands = (await _productBrandRepository.GetAllAsync()).ToDictionary(x => x.BrandId, x => x.BrandName);
             var colors = (await _productColorRepository.GetAllAsync()).ToDictionary(x => x.ColorId, x => x.ColorName);
             var materials = (await _productMaterialRepository.GetAllAsync()).ToDictionary(x => x.MaterialId, x => x.MaterialName);
@@ -66,91 +103,69 @@ namespace Application.Service
             var types = (await _productTypeRepository.GetAllAsync()).ToDictionary(x => x.TypeId, x => x.TypeName);
             var categories = (await _productCategoryRepository.GetAllAsync()).ToDictionary(x => x.CategoryId, x => x.CategoryName);
 
-            var result = products.Select(product =>
+            return products.Select(product =>
             {
                 var dto = _mapper.Map<ProductResponseDto>(product);
-                dto.Brand = brands.TryGetValue(product.BrandId, out var brand) ? brand : "";
-                dto.Color = colors.TryGetValue(product.ColorId, out var color) ? color : "";
-                dto.Material = materials.TryGetValue(product.MaterialId, out var material) ? material : "";
-                dto.Style = styles.TryGetValue(product.StyleId, out var style) ? style : "";
-                dto.Type = types.TryGetValue(product.TypeId, out var type) ? type : "";
-                dto.Category = categories.TryGetValue(product.CategoryId, out var category) ? category : "";
+                dto.Brand = brands.TryGetValue(product.BrandId, out var b) ? b : "";
+                dto.Color = colors.TryGetValue(product.ColorId, out var c) ? c : "";
+                dto.Material = materials.TryGetValue(product.MaterialId, out var m) ? m : "";
+                dto.Style = styles.TryGetValue(product.StyleId, out var s) ? s : "";
+                dto.Type = types.TryGetValue(product.TypeId, out var t) ? t : "";
+                dto.Category = categories.TryGetValue(product.CategoryId, out var cat) ? cat : "";
                 return dto;
             }).ToList();
-
-            return result;
         }
 
+        // Lấy sản phẩm theo ID
         public async Task<ProductResponseDto> GetByIdAsync(Guid id)
         {
             var product = await _productRepository.GetByIdAsync(id);
             if (product == null) return null;
 
-            var res = _mapper.Map<ProductResponseDto>(product);
-            await MapperProduct(product, res);
+            var dto = _mapper.Map<ProductResponseDto>(product);
+            await MapProductNamesAsync(product, dto);
 
-            return res;
+            return dto;
         }
 
+        // Tạo sản phẩm mới
         public async Task<ProductResponseDto> CreateProductAsync(ProductRequestDto dto)
         {
-
             var product = _mapper.Map<Product>(dto);
+
             if (dto.ImageFile != null)
                 product.ImageURL = await _cloudinaryService.UploadImageAsync(dto.ImageFile);
             else
-                product.ImageURL = "";           // hoặc URL ảnh mặc định
+                product.ImageURL = "";
 
-             await _productRepository.AddAsync(product);
+            await _productRepository.AddAsync(product);
 
-            var res = _mapper.Map<ProductResponseDto>(product);
-            await MapperProduct(product, res);
+            var productFull = await GetProductWithIncludes()
+                .FirstOrDefaultAsync(p => p.ProductId == product.ProductId);
 
-            return res;
+            return _mapper.Map<ProductResponseDto>(productFull);
         }
 
-        private async Task MapperProduct(Product product, ProductResponseDto res)
+        // Cập nhật sản phẩm
+        public async Task<ProductResponseDto> UpdateAsync(Guid id, ProductRequestDto dto)
         {
-            res.Brand = (await _productBrandRepository.GetByIdAsync(product.BrandId)).BrandName;
-            res.Category = (await _productCategoryRepository.GetByIdAsync(product.CategoryId)).CategoryName;
-            res.Color = (await _productColorRepository.GetByIdAsync(product.ColorId)).ColorName;
-            res.Material = (await _productMaterialRepository.GetByIdAsync(product.MaterialId)).MaterialName;
-            res.Style = (await _productStyleRepository.GetByIdAsync(product.StyleId)).StyleName;
-            res.Type = (await _productTypeRepository.GetByIdAsync(product.TypeId)).TypeName;
-        }
-
-        public async Task<ProductResponseDto> UpdateAsync(Guid id, ProductUpdateDto dto)
-        {
-
             var product = await _productRepository.GetByIdAsync(id);
             if (product == null) return null;
 
             _mapper.Map(dto, product);
 
             if (dto.ImageFile != null)
-            {
-                // Tách PublicId từ URL hiện tại
-                if (!string.IsNullOrEmpty(product.ImageURL))
-                {
-                    var uri = new Uri(product.ImageURL);
-                    var segments = uri.AbsolutePath.Split('/');
-                    var fileName = segments.Last(); 
-                    var publicId = $"products/{fileName.Substring(0, fileName.LastIndexOf('.'))}"; 
-
-                    await _cloudinaryService.DeleteImageAsync(publicId); 
-                }
-
-                string imageUrl = await _cloudinaryService.UploadImageAsync(dto.ImageFile);
-                product.ImageURL = imageUrl;
-            }
+                product.ImageURL = await UpdateProductImageAsync(product, dto.ImageFile);
 
             await _productRepository.UpdateAsync(product);
 
-            var res = _mapper.Map<ProductResponseDto>(product);
-            await MapperProduct(product, res);
-            return res;
+            var productFull = await GetProductWithIncludes()
+                .FirstOrDefaultAsync(p => p.ProductId == product.ProductId);
+
+            return _mapper.Map<ProductResponseDto>(productFull);
         }
 
+        // Xoá mềm (soft delete)
         public async Task<bool> DeleteAsync(Guid id)
         {
             var product = await _productRepository.GetByIdAsync(id);
@@ -161,14 +176,14 @@ namespace Application.Service
             return true;
         }
 
+        // Tìm kiếm phân trang
         public async Task<PaginatedResultDto<ProductResponseDto>> SearchAsync(ProductQueryDto dto)
         {
-            var q = _productRepository.Query()            // no-tracking IQueryable<Product>
+            var q = _productRepository.Query()
                                       .Where(p => !p.IsDeleted);
 
             if (!string.IsNullOrWhiteSpace(dto.Keyword))
                 q = q.Where(p => EF.Functions.Like(p.Name, $"%{dto.Keyword}%"));
-
             if (dto.BrandId.HasValue) q = q.Where(p => p.BrandId == dto.BrandId);
             if (dto.ColorId.HasValue) q = q.Where(p => p.ColorId == dto.ColorId);
             if (dto.StyleId.HasValue) q = q.Where(p => p.StyleId == dto.StyleId);
@@ -206,20 +221,15 @@ namespace Application.Service
             return new PaginatedResultDto<ProductResponseDto>(items, totalRecords, totalPages, page, pageSize);
         }
 
-
-        /// <summary>
-        /// Gợi ý combo đồ dựa trên mô tả (prompt) người dùng.
-        /// </summary>
+        // Gợi ý combo đồ dựa trên prompt người dùng (AI)
         public async Task<OutfitSuggestionDto?> SuggestOutfitAsync(string prompt)
         {
-            // 1. Hỏi AI xem style nào phù hợp
             var styleName = await _ai.ClassifyAsync(prompt);
             if (string.IsNullOrEmpty(styleName)) return null;
 
-            // 2. Lấy StyleId & CategoryIds
             var style = await _productStyleRepository.Query()
-                                                       .FirstOrDefaultAsync(s => s.StyleName == styleName);
-            if (style is null) return null;
+                .FirstOrDefaultAsync(s => s.StyleName == styleName);
+            if (style == null) return null;
 
             var categories = await _productCategoryRepository.GetAllAsync();
             var catTops = categories.First(c => c.CategoryName == "Tops").CategoryId;
@@ -227,54 +237,33 @@ namespace Application.Service
             var catFootwear = categories.First(c => c.CategoryName == "Footwear").CategoryId;
             var catAccessory = categories.First(c => c.CategoryName == "Accessories").CategoryId;
 
-            // 3. Chọn 1 sản phẩm cho mỗi category (mới nhất, bạn đổi rule tuỳ ý)
             async Task<Product?> PickAsync(Guid catId) =>
-    await _productRepository.Query()
-        .Where(p => p.CategoryId == catId && p.StyleId == style.StyleId && !p.IsDeleted)
-        .Include(p => p.Brand)
-        .Include(p => p.Category)
-        .Include(p => p.Color)
-        .Include(p => p.Material)
-        .Include(p => p.Style)
-        .Include(p => p.Type)
-        .OrderByDescending(p => p.CreatedAt)
-        .FirstOrDefaultAsync();
-
+                await _productRepository.Query()
+                    .Where(p => p.CategoryId == catId && p.StyleId == style.StyleId && !p.IsDeleted)
+                    .Include(p => p.Brand)
+                    .Include(p => p.Category)
+                    .Include(p => p.Color)
+                    .Include(p => p.Material)
+                    .Include(p => p.Style)
+                    .Include(p => p.Type)
+                    .OrderBy(p => Guid.NewGuid()) // random
+                    .FirstOrDefaultAsync();
 
             var top = await PickAsync(catTops);
             var bottom = await PickAsync(catBottoms);
             var footwear = await PickAsync(catFootwear);
             var accessory = await PickAsync(catAccessory);
 
-            //if (top is null || bottom is null || footwear is null || accessory is null)
-            //    return null; // thiếu item nào đó
-
-            // 4. Map ra DTO và return
-            ProductResponseDto? Map(Product? p) => p == null ? null : new ProductResponseDto
-            {
-                ProductId = p.ProductId,
-                Name = p.Name,
-                Price = p.Price,
-                ImageURL = p.ImageURL,
-                Brand = p.Brand.BrandName,
-                Category = p.Category.CategoryName,
-                Color = p.Color.ColorName,
-                Material = p.Material.MaterialName,
-                Style = p.Style.StyleName,
-                Type = p.Type.TypeName,
-                Description = p.Description
-
-            };
+            //if (top == null || bottom == null || footwear == null)
 
             return new OutfitSuggestionDto
             {
-                Style = styleName,
-                Tops = Map(top),
-                Bottoms = Map(bottom),
-                Footwear = Map(footwear),
-                Accessories = Map(accessory)
+                Style = style.StyleName,
+                Tops = _mapper.Map<ProductResponseDto>(top),
+                Bottoms = _mapper.Map<ProductResponseDto>(bottom),
+                Footwears = _mapper.Map<ProductResponseDto>(footwear),
+                Accessories = _mapper.Map<ProductResponseDto>(accessory) 
             };
         }
-
-    }
+    } 
 }
