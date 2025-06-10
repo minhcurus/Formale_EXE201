@@ -171,7 +171,7 @@ namespace API.Controllers
         [HttpPost("google-login")]
         public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDTO googleLoginDTO)
         {
-            var result = await _userAccountService.GoogleLogin(googleLoginDTO.AccessToken);
+            var result = await _userAccountService.GoogleLogin(googleLoginDTO.Id_Token);
             return Ok(result);
         }
 
