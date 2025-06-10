@@ -11,7 +11,6 @@ namespace Application.DTO
 {
     public class UserResponse
     {
-        [JsonIgnore]
         public int UserId { get; set; }
         public string FullName { get; set; }
         public string Email { get; set; }
