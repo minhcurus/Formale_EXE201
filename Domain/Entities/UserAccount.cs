@@ -15,7 +15,7 @@ namespace Domain.Entities
         public string FullName { get; set; }
         public string Email { get; set; }
         public string UserName { get; set; }
-        public string Password { get; set; }
+        public string? Password { get; set; }
         public string PhoneNumber { get; set; }
         public string Address { get; set; }
         public string? Token { get; set; }
@@ -24,6 +24,7 @@ namespace Domain.Entities
         public string? Image_User { get; set; }
         public string? Background_Image { get; set; }
         public string? Description { get; set; }
+        public string? LoginProvider { get; set; } // "Local" hoặc "Google"
         public DateTime CreateAt { get; set; }
         public DateTime UpdateAt { get; set; }
         public string IsActive { get; set; }

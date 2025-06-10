@@ -16,6 +16,8 @@ namespace Application.Interface
         Task<ResultMessage> ActiveAccount(ActiveAccountDTO accountDTO);
         Task<ResultMessage> ResetOtp(ResetOtpDTO resetOtpDTO);
         Task<ResultMessage> Logout(TokenDTO tokenDTO);
+        Task<ResultMessage> GoogleLogin(string accessToken);
+        Task<ResultMessage> LoginWithGoogleCode(string code);
 
     }
 }

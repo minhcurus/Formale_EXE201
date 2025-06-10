@@ -71,7 +71,7 @@ namespace Application.Service
                 BuyerEmail = user.Email,
                 BuyerPhone = user.PhoneNumber,
                 BuyerAddress = user.Address,
-                ReturnUrl = "https://yourdomain.com/payment/success",
+                ReturnUrl = "https://pokemon.com/payment/success",
                 Method = PaymentMethod.PayOs,
                 OrderId = createdOrder.OrderId,
             };

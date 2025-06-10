@@ -1,8 +1,10 @@
-﻿using Application;
+﻿using System.Security.Claims;
+using Application;
 using Application.DTO;
 using Application.Interface;
 using Application.Validation;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -48,6 +50,14 @@ namespace API.Controllers
                 Data = get
             }; ;
         }
+
+        [HttpPost("GetCurrentUser")]
+        public async Task<IActionResult> GetCurrentUser(TokenDTO Token)
+        {
+            var get = await _userService.GetCurrentUser(Token.token);
+            return Ok(get);
+        }
+    
 
         [HttpPut("update-profile")]
         public async Task<ResultMessage> UpdateProfile(int id,[FromForm] UserDTO userDTO)

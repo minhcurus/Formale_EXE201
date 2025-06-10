@@ -1,14 +1,18 @@
-using System.Text;
+﻿using System.Text;
 using API.Mapper;
 using Application.Interface;
 using Application.Service;
 using Application.Settings;
 using Infrastructure;
 using Infrastructure.Repository;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.Filters;
 using VaccinceCenter.Repositories.Base;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,10 +30,39 @@ builder.Services.Configure<JwtSetting>(
 var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSetting>();
 var key = Encoding.ASCII.GetBytes(jwtSettings.SecretKey);
 
+//settings
 builder.Services.Configure<EmailSettings>(
     builder.Configuration.GetSection("EmailSettings"));
 
 builder.Services.Configure<PayOsSetting>(builder.Configuration.GetSection("PayOsConfig"));
+
+builder.Services.Configure<GoogleSetting>(
+    builder.Configuration.GetSection("GoogleSetting"));
+
+//Google
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+})
+.AddCookie()
+.AddGoogle(options =>
+{
+    options.ClientId = builder.Configuration["GoogleSetting:ClientId"];
+    options.ClientSecret = builder.Configuration["GoogleSetting:ClientSecret"];
+    options.CallbackPath = "/signin-google"; 
+
+    options.SaveTokens = true;
+    options.Scope.Add("profile");
+    options.Scope.Add("email");
+
+    options.Events.OnCreatingTicket = ctx =>
+    {
+        return Task.CompletedTask;
+    };
+});
+
+
 
 
 //OpenRouter
@@ -110,6 +143,33 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+//builder.Services.AddSwaggerGen(c =>
+//{
+//    c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
+
+//    c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+//    {
+//        Type = SecuritySchemeType.OAuth2,
+//        Flows = new OpenApiOAuthFlows
+//        {
+//            AuthorizationCode = new OpenApiOAuthFlow
+//            {
+//                AuthorizationUrl = new Uri("https://accounts.google.com/o/oauth2/v2/auth"),
+//                TokenUrl = new Uri("https://oauth2.googleapis.com/token"),
+//                Scopes = new Dictionary<string, string>
+//                {
+//                    { "openid", "OpenID" },
+//                    { "email", "Email" },
+//                    { "profile", "Profile" }
+//                }
+//            }
+//        }
+//    });
+
+//    c.OperationFilter<SecurityRequirementsOperationFilter>();
+//});
+
+
 builder.Services.AddSwaggerGen(c =>
 {
     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
@@ -140,6 +200,8 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+
+
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -158,9 +220,12 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 
+
+
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+
 
 app.MapControllers();
 

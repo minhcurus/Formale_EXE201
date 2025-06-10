@@ -13,6 +13,9 @@ using Infrastructure.Repository;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Options;
 using static System.Net.WebRequestMethods;
+using Google.Apis.Auth;
+using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 namespace Application.Service
 {
     public class UserAccountService : IUserAccountService
@@ -20,12 +23,16 @@ namespace Application.Service
         private readonly UserAccountRepository _repository;
         private readonly JwtSetting _jwtSettings;
         private readonly EmailService _emailService;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly GoogleSetting _googleSetting;
 
-        public UserAccountService(UserAccountRepository repository, IOptions<JwtSetting> jwtSetting, EmailService emailService)
+        public UserAccountService(UserAccountRepository repository, IOptions<JwtSetting> jwtSetting, EmailService emailService, IHttpClientFactory httpClientFactory, IOptions<GoogleSetting> googleSetting)
         {
             _repository = repository;
             _jwtSettings = jwtSetting.Value;    
             _emailService = emailService;
+            _httpClientFactory = httpClientFactory;
+            _googleSetting = googleSetting.Value;
         }
 
         public async Task<ResultMessage> ChangePassword(ChangePasswordDTO changePasswordDTO)
@@ -89,6 +96,16 @@ namespace Application.Service
                 };
             }
 
+            //if (getEmail.LoginProvider != "Local")
+            //{
+            //    return new ResultMessage
+            //    {
+            //        Success = false,
+            //        Message = "Tài khoản này không hỗ trợ đăng nhập bằng mật khẩu. Hãy dùng Google.",
+            //        Data = null
+            //    };
+            //}
+
             if (getEmail.IsActive != "Active")
             {
                 return new ResultMessage
@@ -143,6 +160,7 @@ namespace Application.Service
                 FullName = registerDTO.FullName,
                 UserName = registerDTO.UserName,
                 PhoneNumber = registerDTO.PhoneNumber,
+                LoginProvider = "Local",
                 Address = registerDTO.Address,
                 Image_User = null,
                 Background_Image = null,
@@ -198,9 +216,23 @@ namespace Application.Service
             var claims = new List<Claim>
     {
         new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-        new Claim(ClaimTypes.Email, user.Email),
+        new Claim(ClaimTypes.Email, user.Email ?? ""),
+        new Claim("full_name", user.FullName ?? ""),
+        new Claim("username", user.UserName ?? ""),
+        new Claim(ClaimTypes.MobilePhone, user.PhoneNumber ?? ""),
+        new Claim("address", user.Address ?? ""),
         new Claim(ClaimTypes.Role, user.RoleId.ToString()),
-            };
+    };
+
+            //thêm nếu không null
+            if (user.DateOfBirth != null)
+                claims.Add(new Claim("dob", user.DateOfBirth.ToString("yyyy-MM-dd")));
+            if (!string.IsNullOrEmpty(user.Image_User))
+                claims.Add(new Claim("image_user", user.Image_User));
+            if (!string.IsNullOrEmpty(user.Background_Image))
+                claims.Add(new Claim("background_image", user.Background_Image));
+            if (!string.IsNullOrEmpty(user.Description))
+                claims.Add(new Claim("description", user.Description));
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
@@ -217,6 +249,7 @@ namespace Application.Service
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
+
 
         public async Task<ResultMessage> ActiveAccount(ActiveAccountDTO accountDTO)
         {
@@ -290,6 +323,124 @@ namespace Application.Service
                 Success = true,
                 Message = "Đã gửi lại mã otp, hãy kiểm tra Email của bạn!",
                 Data = null,
+            };
+        }
+
+        public async Task<ResultMessage> GoogleLogin(string accessToken)
+        {
+            GoogleJsonWebSignature.Payload payload;
+            try
+            {
+                payload = await GoogleJsonWebSignature.ValidateAsync(accessToken);
+            }
+            catch
+            {
+                return new ResultMessage
+                {
+                    Success = false,
+                    Message = "Token Google không hợp lệ",
+                    Data = null
+                };
+            }
+
+            var email = payload.Email;
+            var fullName = payload.Name;
+            var picture = payload.Picture;
+
+            var user = await _repository.GetEmail(email);
+            if (user != null)
+            {
+                var token = GenerateJwtToken(user);
+                user.Token = token;
+                await _repository.UpdateAsync(user);
+
+                return new ResultMessage
+                {
+                    Success = true,
+                    Message = "Đăng nhập Google thành công",
+                    Data = token
+                };
+            }
+
+            var newUser = new UserAccount
+            {
+                Email = email,
+                FullName = fullName,
+                LoginProvider = "Google",
+                UserName = "",
+                Address = "",
+                Password = "",
+                PhoneNumber = "",
+                Image_User = picture,
+                Background_Image = null,
+                IsActive = "Active",
+                Status = "Active",
+                RoleId = 2,
+                Token = null
+            };
+
+            await _repository.CreateAsync(newUser);
+
+            var createdUser = await _repository.GetEmail(email);
+            var jwt = GenerateJwtToken(createdUser);
+            createdUser.Token = jwt;
+            await _repository.UpdateAsync(createdUser);
+
+            return new ResultMessage
+            {
+                Success = true,
+                Message = "Tài khoản Google mới được tạo và đăng nhập thành công",
+                Data = new AuthResponseDTO
+                {
+                    Token = jwt,
+                    Email = createdUser.Email,
+                    FullName = createdUser.FullName,
+                    ImageUrl = createdUser.Image_User,
+                }
+            };
+        }
+
+        public async Task<ResultMessage> LoginWithGoogleCode(string code)
+        {
+            var clientId = _googleSetting.ClientId;
+            var clientSecret = _googleSetting.ClientSecret;
+            var redirectUri = _googleSetting.RedirectUri;
+
+            var httpClient = _httpClientFactory.CreateClient();
+
+            var values = new Dictionary<string, string>
+        {
+            { "code", code },
+            { "client_id", clientId },
+            { "client_secret", clientSecret },
+            { "redirect_uri", redirectUri },
+            { "grant_type", "authorization_code" }
+        };
+
+            var content = new FormUrlEncodedContent(values);
+            var response = await httpClient.PostAsync("https://oauth2.googleapis.com/token", content);
+            var responseString = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new ResultMessage
+                {
+                    Success = false,
+                    Message = "Failed to exchange code for token",
+                    Data = responseString
+                };
+            }
+
+            var tokenData = JsonSerializer.Deserialize<JsonElement>(responseString);
+            var accessToken = tokenData.GetProperty("access_token").GetString();
+
+            // TODO: Call Google API to get user info with access_token, then login or register user
+
+            return new ResultMessage
+            {
+                Success = true,
+                Message = "Google login successful.",
+                Data = accessToken 
             };
         }
     }
