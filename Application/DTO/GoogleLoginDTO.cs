@@ -8,6 +8,6 @@ namespace Application.DTO
 {
     public class GoogleLoginDTO
     {
-        public string AccessToken { get; set; }
+        public string Id_Token { get; set; }
     }
 }

@@ -96,15 +96,15 @@ namespace Application.Service
                 };
             }
 
-            //if (getEmail.LoginProvider != "Local")
-            //{
-            //    return new ResultMessage
-            //    {
-            //        Success = false,
-            //        Message = "Tài khoản này không hỗ trợ đăng nhập bằng mật khẩu. Hãy dùng Google.",
-            //        Data = null
-            //    };
-            //}
+            if (getEmail.LoginProvider != "Local")
+            {
+                return new ResultMessage
+                {
+                    Success = false,
+                    Message = "Tài khoản này không hỗ trợ đăng nhập bằng mật khẩu. Hãy dùng Google.",
+                    Data = null
+                };
+            }
 
             if (getEmail.IsActive != "Active")
             {
@@ -432,7 +432,7 @@ namespace Application.Service
             }
 
             var tokenData = JsonSerializer.Deserialize<JsonElement>(responseString);
-            var accessToken = tokenData.GetProperty("access_token").GetString();
+            var accessToken = tokenData.GetProperty("id_token").GetString();
 
             // TODO: Call Google API to get user info with access_token, then login or register user
 
