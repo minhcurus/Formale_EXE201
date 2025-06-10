@@ -51,7 +51,7 @@ namespace API.Controllers
             }; ;
         }
 
-        [HttpPost("GetCurrentUser")]
+        [HttpGet("GetCurrentUser")]
         public async Task<IActionResult> GetCurrentUser(TokenDTO Token)
         {
             var get = await _userService.GetCurrentUser(Token.token);
