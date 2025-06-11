@@ -149,23 +149,19 @@ namespace API.Controllers
             return Ok(result);
         }
 
-
-
         // Trả link Google login cho FE
         [HttpGet("google-login-link")]
         public IActionResult GetGoogleLoginLink()
         {
-            var redirectUrl = "http://localhost:5038/api/Auth/GoogleCallback";
 
             var googleAuthUrl = $"https://accounts.google.com/o/oauth2/v2/auth?" +
                 $"client_id={_googleSetting.ClientId}" +
                 $"&response_type=code" +
                 $"&scope=email%20profile" +
-                $"&redirect_uri={Uri.EscapeDataString(redirectUrl)}";
+                $"&redirect_uri={Uri.EscapeDataString(_googleSetting.RedirectUri)}";
 
             return Ok(new { loginUrl = googleAuthUrl });
         }
-
 
         // FE gọi API này gửi Google access token/id_token cho backend
         [HttpPost("google-login")]
