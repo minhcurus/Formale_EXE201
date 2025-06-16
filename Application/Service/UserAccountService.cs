@@ -96,6 +96,16 @@ namespace Application.Service
                 };
             }
 
+            if (getEmail.Status == "Ban")
+            {
+                return new ResultMessage
+                {
+                    Success = false,
+                    Message = "Tài khoản này đã bị cấm",
+                    Data = null
+                };
+            }
+
             if (getEmail.LoginProvider != "Local")
             {
                 return new ResultMessage
@@ -169,6 +179,50 @@ namespace Application.Service
                 IsActive = "InActive",
                 RoleId = 2,
                 otp = otp,  
+                OtpExpiry = DateTime.UtcNow.AddMinutes(10),
+            };
+
+            await _repository.CreateAsync(newUser);
+            await _emailService.SendEmailAsync(registerDTO.Email, "Mã kích hoạt tài khoản", $"Mã OTP của bạn là: {otp}");
+            return new ResultMessage
+            {
+                Success = true,
+                Message = "Đăng ký thành công! \n\r Hãy kiểm tra email của bạn để nhận mã OTP kích hoạt!",
+                Data = "0"
+            };
+
+        }
+
+        public async Task<ResultMessage> RegisterForManager(RegisterDTO registerDTO)
+        {
+            var checkEmail = await _repository.GetEmail(registerDTO.Email);
+            if (checkEmail != null)
+            {
+                return new ResultMessage
+                {
+                    Success = false,
+                    Message = "Email đã tồn tại!",
+                    Data = null
+                };
+            }
+
+            var otp = OTPGenerator.GenerateOTP();
+            var newUser = new UserAccount
+            {
+                Email = registerDTO.Email,
+                Password = registerDTO.Password,
+                FullName = registerDTO.FullName,
+                UserName = registerDTO.UserName,
+                PhoneNumber = registerDTO.PhoneNumber,
+                LoginProvider = "Local",
+                Address = registerDTO.Address,
+                Image_User = null,
+                Background_Image = null,
+                Status = "InActive",
+                Description = null,
+                IsActive = "InActive",
+                RoleId = 3,
+                otp = otp,
                 OtpExpiry = DateTime.UtcNow.AddMinutes(10),
             };
 
@@ -350,6 +404,16 @@ namespace Application.Service
             var user = await _repository.GetEmail(email);
             if (user != null)
             {
+                if (user.Status == "Ban")
+                {
+                    return new ResultMessage
+                    {
+                        Success = false,
+                        Message = "Tài khoản của bạn đã bị cấm.",
+                        Data = null
+                    };
+                }
+
                 var token = GenerateJwtToken(user);
                 user.Token = token;
                 await _repository.UpdateAsync(user);

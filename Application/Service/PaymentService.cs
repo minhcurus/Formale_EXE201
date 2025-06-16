@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Application.DTO;
@@ -9,6 +10,7 @@ using AutoMapper;
 using Domain.Entities;
 using Domain.Enum;
 using Infrastructure.Repository;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Service
@@ -18,30 +20,45 @@ namespace Application.Service
         private readonly PaymentRepository _paymentRepo;
         private readonly PayOsService _payOsService;
         private readonly IMapper _mapper;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly CurrentUserService _currentUser;
 
-        public PaymentService(PaymentRepository paymentRepo, PayOsService payOsService,IMapper mapper)
+        public PaymentService(PaymentRepository paymentRepo, PayOsService payOsService,IMapper mapper, IHttpContextAccessor httpContextAccessor,CurrentUserService currentUser)
         {
             _paymentRepo = paymentRepo;
             _payOsService = payOsService;
             _mapper = mapper;
+            _httpContextAccessor = httpContextAccessor;
+            _currentUser = currentUser;
         }
 
 
-        public async Task<ResultMessage> CreatePayment(PaymentDTO dto)
+        public async Task<ResultMessage> CreatePayment(PaymentRequestDTO dto)
         {
+            var user = _httpContextAccessor.HttpContext?.User;
+            if (user == null || !user.Identity.IsAuthenticated)
+            {
+                return new ResultMessage
+                {
+                    Success = false,
+                    Message = "Người dùng chưa đăng nhập",
+                    Data = null
+                };
+            }
+
             var payOsResponse = await _payOsService.CreatePaymentAsync(dto);
 
             var payment = new Payment
             {
                 OrderId = dto.OrderId,
-                UserId = dto.UserId,
+                UserId = _currentUser.UserId,
                 Amount = dto.Amount,
                 Description = dto.Description,
-                BuyerName = dto.BuyerName,
-                BuyerEmail = dto.BuyerEmail,
-                BuyerPhone = dto.BuyerPhone,
-                BuyerAddress = dto.BuyerAddress,
-                Method = dto.Method,
+                BuyerName = _currentUser.FullName,
+                BuyerEmail = _currentUser.Email,
+                BuyerPhone = _currentUser.PhoneNumber,
+                BuyerAddress = _currentUser.Address,
+                Method = (PaymentMethod)2,
                 ReturnUrl = dto.ReturnUrl,
                 TransactionId = payOsResponse.PaymentLinkId,
                 CheckoutUrl = payOsResponse.CheckoutUrl, 
@@ -118,27 +135,26 @@ namespace Application.Service
 
         }
 
-        public async Task<ResultMessage> GetPaymentByUserId(int id)
+        public async Task<ResultMessage> GetPaymentByUser()
         {
-            var get = await _paymentRepo.GetById(id);
-            if (get == null) 
+            if (_currentUser.UserId == null) 
             { 
                 return new ResultMessage 
                 {
                     Success = false,
-                    Message = "Can not found payment with this Id",
+                    Message = "Khong the tim thay payment voi id nay",
                     Data = null
                 };
             }
 
+            var get = await _paymentRepo.GetByUserId(_currentUser.UserId.Value);
+
             return new ResultMessage
             {
                 Success = true,
-                Message = "Payment found",
-                Data = get,
+                Message = "Danh sách payment của người dùng",
+                Data = get
             };
-
-
         }
 
         public async Task<ResultMessage> UpdatePaymentStatus(long orderCode, Status newStatus)

@@ -17,17 +17,19 @@ namespace Application.Service
     {
         private readonly HttpClient _httpClient;
         private readonly PayOsSetting _settings;
+        private readonly CurrentUserService _currentUserService;
 
-        public PayOsService(HttpClient httpClient, IOptions<PayOsSetting> settings)
+        public PayOsService(HttpClient httpClient, IOptions<PayOsSetting> settings, CurrentUserService currentUserService)
         {
             _settings = settings.Value;
             _httpClient = httpClient;
             _httpClient.BaseAddress = new Uri(_settings.BaseUrl);
             _httpClient.DefaultRequestHeaders.Add("x-client-id", _settings.ClientId);
             _httpClient.DefaultRequestHeaders.Add("x-api-key", _settings.ApiKey);
+            _currentUserService = currentUserService;
         }
 
-        public async Task<PayOsDTO> CreatePaymentAsync(PaymentDTO dto)
+        public async Task<PayOsDTO> CreatePaymentAsync(PaymentRequestDTO dto)
         {
             var orderCode = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             var amount = (long)dto.Amount;
@@ -47,10 +49,10 @@ namespace Application.Service
             // thêm vào payload gửi cho PayOS
             var fullPayload = new Dictionary<string, object>(signPayload)
 {
-    { "buyerName", dto.BuyerName },
-    { "buyerEmail", dto.BuyerEmail },
-    { "buyerPhone", dto.BuyerPhone },
-    { "buyerAddress", dto.BuyerAddress },
+    { "buyerName", _currentUserService.FullName },
+    { "buyerEmail", _currentUserService.Email },
+    { "buyerPhone", _currentUserService.PhoneNumber },
+    { "buyerAddress", _currentUserService.Address },
     { "signature", signature }
 };
 

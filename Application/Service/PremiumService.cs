@@ -20,17 +20,19 @@ namespace Application.Service
         private readonly IOrderService _orderService;
         private readonly IMapper _mapper;
         private readonly IUserService _userService;
+        private readonly CurrentUserService _currentUser;
 
-        public PremiumService(IPaymentService payment, PremiumRepository premiumRepository, IOrderService orderService, IMapper mapper, IUserService userService)
+        public PremiumService(IPaymentService payment, PremiumRepository premiumRepository, IOrderService orderService, IMapper mapper, IUserService userService,CurrentUserService currentUserService)
         { 
             _payment = payment;
             _premiumRepository = premiumRepository;
             _orderService = orderService;
             _mapper = mapper;
             _userService = userService;
+            _currentUser = currentUserService;
         }
 
-        public async Task<ResultMessage> CreatePremiumOrderAndPayment(int userId, PremiumPackageTier tier)
+        public async Task<ResultMessage> CreatePremiumOrderAndPayment(PremiumPackageTier tier)
         {
             var package = await _premiumRepository.GetTier(tier);
             if (package == null)
@@ -44,7 +46,7 @@ namespace Application.Service
 
             var order = new OrderDTO
             {
-                UserId = userId,
+                UserId = _currentUser.UserId,
                 TotalPrice = package.Price,
                 Status = Status.PENDING,
             };
@@ -60,17 +62,16 @@ namespace Application.Service
                     Data = null,
                 };
             }
-            var user = await _userService.GetUsersById(userId);
 
-            var paymentDto = new PaymentDTO
+            var paymentDto = new PaymentRequestDTO
             {
-                UserId = userId,
+                UserId = _currentUser.UserId,
                 Amount = package.Price,
                 Description = $"Thanh toán gói {package.Tier}",
-                BuyerName = user.FullName,
-                BuyerEmail = user.Email,
-                BuyerPhone = user.PhoneNumber,
-                BuyerAddress = user.Address,
+                BuyerName = _currentUser.FullName,
+                BuyerEmail = _currentUser.Email,
+                BuyerPhone = _currentUser.PhoneNumber,
+                BuyerAddress = _currentUser.Address,
                 ReturnUrl = "https://pokemon.com/payment/success",
                 Method = PaymentMethod.PayOs,
                 OrderId = createdOrder.OrderId,

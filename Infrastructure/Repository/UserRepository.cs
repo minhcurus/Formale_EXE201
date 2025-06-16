@@ -24,5 +24,10 @@ namespace Infrastructure.Repository
         {
             return await _context.Users.FirstOrDefaultAsync(e => e.UserId == id);
         }
+
+        public async Task<UserAccount> GetByToken(string token)
+        {
+            return await _context.Users.FirstOrDefaultAsync(e => e.Token == token);
+        }
     }
 }

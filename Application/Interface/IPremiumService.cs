@@ -14,7 +14,7 @@ namespace Application.Interface
         Task<List<PremiunPackageDTO>> GetPremiumPackages();
         Task<ResultMessage> GetPremiumPackagesById(int premiumPackageId);
         Task<ResultMessage> UpdatePremiumPackages(PremiunPackageDTO premiumPackage);
-        Task<ResultMessage> CreatePremiumOrderAndPayment(int userId, PremiumPackageTier tier);
+        Task<ResultMessage> CreatePremiumOrderAndPayment(PremiumPackageTier tier);
         Task<UserResponse> UpdateUserPremiumAsync(int userId, int premiumPackageId);
 
     }

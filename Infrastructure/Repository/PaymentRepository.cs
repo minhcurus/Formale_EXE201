@@ -19,9 +19,11 @@ namespace Infrastructure.Repository
             return await _context.Payments.ToListAsync();
         }
 
-        public async Task<Payment> GetById(int id)
+        public async Task<List<Payment>> GetByUserId(int userId)
         {
-            return await _context.Payments.FirstOrDefaultAsync(e => e.UserId == id);
+            return await _context.Payments
+                                 .Where(e => e.UserId == userId)
+                                 .ToListAsync();
         }
 
         public async Task<Payment> GetByTransactionId(string transactionId)

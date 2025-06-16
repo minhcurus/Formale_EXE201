@@ -2,10 +2,13 @@
 using Application;
 using Application.DTO;
 using Application.Interface;
+using Application.Service;
 using Application.Validation;
+using Domain.Entities;
 using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -15,12 +18,15 @@ namespace API.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly CurrentUserService _currentUser;
 
-        public UserController(IUserService userService)
+        public UserController(IUserService userService, CurrentUserService currentUserService)
         {
             _userService = userService;
+            _currentUser = currentUserService;
         }
 
+        [Authorize(Roles = "1")]
         [HttpGet]
         public async Task<ActionResult<UserResponse>> GetAll()
         {
@@ -51,16 +57,17 @@ namespace API.Controllers
             }; ;
         }
 
-        [HttpPost("GetCurrentUser")]
-        public async Task<IActionResult> GetCurrentUser(TokenDTO Token)
-        {
-            var get = await _userService.GetCurrentUser(Token.token);
+        [Authorize]
+        [HttpGet("user-profile")]
+        public async Task<IActionResult> GetUserInfo()
+        { 
+            var get = await _userService.GetCurrentUser();
             return Ok(get);
         }
-    
 
+        [Authorize(Roles = "2")]
         [HttpPut("update-profile")]
-        public async Task<ResultMessage> UpdateProfile(int id,[FromForm] UserDTO userDTO)
+        public async Task<ResultMessage> UpdateProfile([FromForm] UserDTO userDTO)
         {
             var validator = new UserRequestValidator();
             var validatorResult = validator.Validate(userDTO);
@@ -74,16 +81,29 @@ namespace API.Controllers
                     Data = validatorResult.ToString()
                 };
             }
+
+            var currentUserId = _currentUser.UserId;
+            if (currentUserId == null)
+            {
+                return new ResultMessage
+                {
+                    Success = false,
+                    Message = "Lỗi thẩm quyền!",
+                    Data = null
+                };
+            }
+
             var get = await _userService.UpdateProfile(userDTO);
 
             return new ResultMessage
             {
-                Success = true,
-                Message = "Cập nhật thành công",
+                Success = get > 0,
+                Message = get > 0 ? "Cập nhật thành công" : "Cập nhật thất bại",
                 Data = get
             };
         }
 
+        [Authorize(Roles = "1")]
         [HttpDelete("delete-user")]
         public async Task<ResultMessage> Delete(int id)
         {
@@ -106,5 +126,52 @@ namespace API.Controllers
             };
         }
 
+        [Authorize(Roles = "1")]
+        [HttpPost("Ban-user")]
+        public async Task<ResultMessage> BanUser(int id)
+        {
+            var check = await _userService.GetUsersById(id);
+            if (check == null)
+            {
+                return new ResultMessage
+                {
+                    Success = false,
+                    Message = "Không tìm thấy Id này",
+                    Data = null
+                };
+            }
+
+            await _userService.BanUser(id);
+            return new ResultMessage
+            {
+                Success = true,
+                Message = "Cấm người dùng thành công!",
+                Data = null
+            };
+        }
+
+        [Authorize(Roles = "1")]
+        [HttpPost("UnBan-user")]
+        public async Task<ResultMessage> UnBanUser(int id)
+        {
+            var check = await _userService.GetUsersById(id);
+            if (check == null)
+            {
+                return new ResultMessage
+                {
+                    Success = false,
+                    Message = "Không tìm thấy Id này",
+                    Data = null
+                };
+            }
+
+            await _userService.UnBanUser(id);
+            return new ResultMessage
+            {
+                Success = true,
+                Message = "Đã gỡ cấm người dùng!",
+                Data = null
+            };
+        }
     }
 }

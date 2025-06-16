@@ -12,7 +12,7 @@ namespace Domain.Entities
     {
         [Key]
         public int Id { get; set; }
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
         public int? OrderId { get; set; }
         public int? PremiumPackageId { get; set; }
         public long OrderCode { get; set; }          
