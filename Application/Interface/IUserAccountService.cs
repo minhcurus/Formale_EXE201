@@ -11,6 +11,7 @@ namespace Application.Interface
     public interface IUserAccountService
     {
         Task<ResultMessage> Register(RegisterDTO registerDTO);
+        Task<ResultMessage> RegisterForManager(RegisterDTO registerDTO);
         Task<ResultMessage> Login(LoginDTO loginDTO);
         Task<ResultMessage> ChangePassword(ChangePasswordDTO changePasswordDTO);
         Task<ResultMessage> ActiveAccount(ActiveAccountDTO accountDTO);
@@ -18,6 +19,5 @@ namespace Application.Interface
         Task<ResultMessage> Logout(TokenDTO tokenDTO);
         Task<ResultMessage> GoogleLogin(string accessToken);
         Task<ResultMessage> LoginWithGoogleCode(string code);
-
     }
 }

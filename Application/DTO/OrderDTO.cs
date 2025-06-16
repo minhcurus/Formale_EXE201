@@ -10,7 +10,7 @@ namespace Application.DTO
     public class OrderDTO
     {
         public int OrderId { get; set; }
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
         public double TotalPrice { get; set; }
         public Status Status { get; set; } = Status.PENDING;
     }

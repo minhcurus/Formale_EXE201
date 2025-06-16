@@ -3,6 +3,7 @@ using Application.DTO;
 using Application.Interface;
 using Application.Service;
 using Domain.Enum;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -33,6 +34,7 @@ namespace API.Controllers
             return Ok(get);
         }
 
+        [Authorize(Roles = "1")]
         [HttpPost("update-package")]
         public async Task<ActionResult> UpdatePackage([FromBody]PremiunPackageDTO package)
         {
@@ -40,13 +42,15 @@ namespace API.Controllers
             return Ok(get);
         }
 
+        [Authorize]
         [HttpPost("buy")]
-        public async Task<IActionResult> BuyPremium(int userId, PremiumPackageTier tier)
+        public async Task<IActionResult> BuyPremium(PremiumPackageTier tier)
         {
-            var result = await _premiumService.CreatePremiumOrderAndPayment(userId, tier);
+            var result = await _premiumService.CreatePremiumOrderAndPayment( tier);
             return Ok(result);
         }
 
+        [Authorize(Roles = "1")]
         [HttpPost("update-premium")]
         public async Task<ActionResult<ResultMessage>> UpdateUserPremium([FromBody] UpdatePremiumRequest request)
         {

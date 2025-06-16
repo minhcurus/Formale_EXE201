@@ -12,6 +12,8 @@ using AutoMapper;
 using Domain.Entities;
 using Infrastructure.Repository;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -24,13 +26,17 @@ namespace Application.Service
         private readonly ICloudinaryService _cloudinaryService;
         private readonly IMapper _mapper;
         private readonly JwtSetting _jwtSettings;
+        private readonly CurrentUserService _currentUser;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public UserService(UserRepository repository, IMapper mapper, ICloudinaryService cloudinaryService, IOptions<JwtSetting> jwtSetting)
+        public UserService(UserRepository repository, IMapper mapper, ICloudinaryService cloudinaryService, IOptions<JwtSetting> jwtSetting, CurrentUserService currentUserService, IHttpContextAccessor httpContextAccessor)
         {
             _repository = repository;
             _mapper = mapper;
             _cloudinaryService = cloudinaryService;
             _jwtSettings = jwtSetting.Value;
+            _currentUser = currentUserService;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<bool> DeleteProfile(int id)
@@ -44,6 +50,34 @@ namespace Application.Service
 
             var delete = await _repository.RemoveAsync(check);
             return delete;
+        }
+
+        public async Task<bool> BanUser(int id)
+        {
+            var check = await _repository.GetById(id);
+            if (check == null)
+            {
+                return false;
+
+            }
+
+            check.Status = "Ban";
+            await _repository.UpdateAsync(check);
+            return true;
+        }
+
+        public async Task<bool> UnBanUser(int id)
+        {
+            var check = await _repository.GetById(id);
+            if (check == null)
+            {
+                return false;
+
+            }
+
+            check.Status = "Active";
+            await _repository.UpdateAsync(check);
+            return true;
         }
 
         public async Task<List<UserResponse>> GetAllUser()
@@ -61,7 +95,8 @@ namespace Application.Service
 
         public async Task<int> UpdateProfile(UserDTO userDTO)
         {
-            var user = await _repository.GetById(userDTO.UserId);
+            var currentUserId = _currentUser.UserId;
+            var user = await _repository.GetById((int)currentUserId);
             if (user == null)
             {
                 return 0;
@@ -84,58 +119,37 @@ namespace Application.Service
             return result;
         }
 
-        public async Task<ResultMessage> GetCurrentUser(string token)
+        public async Task<ResultMessage> GetCurrentUser()
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_jwtSettings.SecretKey);
-
-            try
-            {
-                var validationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidIssuer = _jwtSettings.Issuer,
-                    ValidAudience = _jwtSettings.Audience,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateLifetime = true,
-                    ClockSkew = TimeSpan.Zero
-                };
-
-                var principal = tokenHandler.ValidateToken(token, validationParameters, out _);
-                var claims = principal.Claims;
-
-                var result = new
-                {
-                    UserId = claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value,
-                    Email = claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value,
-                    FullName = claims.FirstOrDefault(c => c.Type == "full_name")?.Value,
-                    UserName = claims.FirstOrDefault(c => c.Type == "username")?.Value,
-                    PhoneNumber = claims.FirstOrDefault(c => c.Type == ClaimTypes.MobilePhone)?.Value,
-                    Role = claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value,
-                    Address = claims.FirstOrDefault(c => c.Type == "address")?.Value,
-                    DateOfBirth = claims.FirstOrDefault(c => c.Type == "dob")?.Value,
-                    Image = claims.FirstOrDefault(c => c.Type == "image_user")?.Value,
-                    BackgroundImage = claims.FirstOrDefault(c => c.Type == "background_image")?.Value,
-                    Description = claims.FirstOrDefault(c => c.Type == "description")?.Value,
-                };
-
-                return new ResultMessage
-                {
-                    Success = true,
-                    Message = "Tìm thấy người dùng",
-                    Data = result
-                };
-            }
-            catch (Exception ex)
+            var user = _httpContextAccessor.HttpContext?.User;
+            if (user == null || !user.Identity.IsAuthenticated)
             {
                 return new ResultMessage
                 {
                     Success = false,
-                    Message = "Token không hợp lệ: " + ex.Message,
+                    Message = "Người dùng chưa đăng nhập",
                     Data = null
                 };
             }
+
+            return new ResultMessage
+            {
+                Success = true,
+                Message = "Tìm thấy người dùng",
+                Data = new
+                {
+                _currentUser.UserId,
+                _currentUser.FullName,
+                _currentUser.Email,
+                _currentUser.UserName,
+                _currentUser.PhoneNumber,
+                _currentUser.Role,
+                _currentUser.Address,
+                _currentUser.DateOfBirth,
+                _currentUser.ImageUser,
+                _currentUser.Description,
+                }
+            };
         }
 
     }

@@ -22,6 +22,9 @@ namespace Application.DTO
         public string? Background_Image { get; set; }
         public string? Description { get; set; }
         public int? PremiumPackageId { get; set; }
+        public string? LoginProvider { get; set; }
+        public string IsActive { get; set; }
+        public string Status { get; set; }
         public DateTime PremiumExpiryDate { get; internal set; }
     }
 }

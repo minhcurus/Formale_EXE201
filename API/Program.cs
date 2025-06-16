@@ -39,13 +39,27 @@ builder.Services.Configure<PayOsSetting>(builder.Configuration.GetSection("PayOs
 builder.Services.Configure<GoogleSetting>(
     builder.Configuration.GetSection("GoogleSetting"));
 
-//Google
+//Google + JWT
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-.AddCookie()
+.AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings.Issuer,
+        ValidAudience = jwtSettings.Audience,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ClockSkew = TimeSpan.Zero
+    };
+})
 .AddGoogle(options =>
 {
     options.ClientId = builder.Configuration["GoogleSetting:ClientId"];
@@ -62,8 +76,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-
-
+builder.Services.AddHttpContextAccessor();
 
 //OpenRouter
 builder.Services.AddHttpClient("OpenRouter", c =>
@@ -78,6 +91,7 @@ builder.Services.AddHttpClient("OpenRouter", c =>
 builder.Services.AddScoped<IUserAccountService, UserAccountService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<CurrentUserService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IPremiumService, PremiumService>();
@@ -86,6 +100,7 @@ builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 builder.Services.AddHttpClient<PayOsService>();
 builder.Services.AddHttpClient<OpenRouterService>();
 builder.Services.AddScoped<IOpenRouterService, OpenRouterService>();
+
 
 
 //DI Repository
@@ -121,79 +136,34 @@ builder.Services.AddCors(options =>
         });
 });
 
-//Authentication
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.RequireHttpsMetadata = false; 
-    options.SaveToken = true;
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSettings.Issuer,
-        ValidAudience = jwtSettings.Audience,
-        IssuerSigningKey = new SymmetricSecurityKey(key),
-        ClockSkew = TimeSpan.Zero 
-    };
-});
-
-//builder.Services.AddSwaggerGen(c =>
-//{
-//    c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
-
-//    c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
-//    {
-//        Type = SecuritySchemeType.OAuth2,
-//        Flows = new OpenApiOAuthFlows
-//        {
-//            AuthorizationCode = new OpenApiOAuthFlow
-//            {
-//                AuthorizationUrl = new Uri("https://accounts.google.com/o/oauth2/v2/auth"),
-//                TokenUrl = new Uri("https://oauth2.googleapis.com/token"),
-//                Scopes = new Dictionary<string, string>
-//                {
-//                    { "openid", "OpenID" },
-//                    { "email", "Email" },
-//                    { "profile", "Profile" }
-//                }
-//            }
-//        }
-//    });
-
-//    c.OperationFilter<SecurityRequirementsOperationFilter>();
-//});
-
-
 builder.Services.AddSwaggerGen(c =>
 {
-    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
+
+    // Cấu hình JWT Bearer
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header using the Bearer scheme. Example: 'Bearer {token}'",
+        Description = "Nhập token dạng: Bearer {token}",
         Name = "Authorization",
-        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http, 
+        Scheme = "bearer",               
+        BearerFormat = "JWT"
     });
-    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement()
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            new OpenApiSecurityScheme
             {
-                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                Reference = new OpenApiReference
                 {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Type = ReferenceType.SecurityScheme,
                     Id = "Bearer"
                 },
-                Scheme = "oauth2",
-                Name = "Bearer",
-                In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-
+                Scheme = "bearer",
+                Name = "Authorization",
+                In = ParameterLocation.Header
             },
             new List<string>()
         }
@@ -220,12 +190,9 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 
-
-
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
-
 
 app.MapControllers();
 

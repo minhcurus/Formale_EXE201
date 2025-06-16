@@ -14,6 +14,8 @@ namespace Application.Interface
         Task<UserResponse> GetUsersById(int id);
         Task<int> UpdateProfile(UserDTO userAccount);
         Task<bool> DeleteProfile(int id);
-        Task<ResultMessage> GetCurrentUser(string token);
+        Task<ResultMessage> GetCurrentUser();
+        Task<bool> BanUser(int id);
+        Task<bool> UnBanUser(int id);
     }
 }

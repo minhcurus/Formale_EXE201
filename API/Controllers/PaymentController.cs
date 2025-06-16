@@ -4,11 +4,13 @@ using Application.Interface;
 using Application.Validation;
 using Domain.Enum;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class PaymentController : ControllerBase
@@ -20,6 +22,7 @@ namespace API.Controllers
             _paymentService = paymentService;
         }
 
+        [Authorize(Roles = "1")]
         [HttpGet("getpayment")]
         public async Task<ActionResult<PaymentDTO>> GetAll()
         {
@@ -27,15 +30,17 @@ namespace API.Controllers
             return Ok(gt);
         }
 
-        [HttpPost("getpayment-byuser")]
-        public async Task<ActionResult<PaymentDTO>> GetByUserId(int id)
+        [Authorize]
+        [HttpGet("getpayment-byuser")]
+        public async Task<ActionResult<PaymentDTO>> GetByUserId()
         {
-            var gt = await _paymentService.GetPaymentByUserId(id);
+            var gt = await _paymentService.GetPaymentByUser();
             return Ok(gt);
         }
 
+        [Authorize]
         [HttpPost("create")]
-        public async Task<IActionResult> Create([FromBody] PaymentDTO dto)
+        public async Task<IActionResult> Create([FromBody] PaymentRequestDTO dto)
         {
             var validator = new PaymentRequestValidator();
             var validatorResult = validator.Validate(dto);
@@ -54,6 +59,7 @@ namespace API.Controllers
             return Ok(result);
         }
 
+        [Authorize]
         [HttpPost("search-payment")]
         public async Task<IActionResult> SearchPayment([FromBody] SearchTransactionDTO dto)
         {
@@ -62,6 +68,7 @@ namespace API.Controllers
 
         }
 
+        [Authorize]
         [HttpPost("cancel")]
         public async Task<IActionResult> CancelPayment([FromBody] CancelPaymentDTO request)
         {
@@ -69,6 +76,7 @@ namespace API.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "1")]
         [HttpPut("update-status")]
         public async Task<IActionResult> UpdateStatus(long orderCode, Status status)
         {

@@ -15,6 +15,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.Google;
 using Application.Settings;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Controllers
 {
@@ -32,6 +33,28 @@ namespace API.Controllers
 
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDTO registerDTO)
+        {
+            var validator = new RegisterRequestValidator();
+            var validatorResult = validator.Validate(registerDTO);
+
+            if (validatorResult.IsValid == false)
+            {
+                return BadRequest(new ResultMessage
+                {
+                    Success = false,
+                    Message = "Missing value!",
+                    Data = validatorResult.ToString()
+                });
+            }
+
+            var result = await _userAccountService.Register(registerDTO);
+            return Ok(result);
+
+        }
+
+        [Authorize(Roles = "1")]
+        [HttpPost("register-manager")]
+        public async Task<IActionResult> RegisterForManager([FromBody] RegisterDTO registerDTO)
         {
             var validator = new RegisterRequestValidator();
             var validatorResult = validator.Validate(registerDTO);
