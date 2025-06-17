@@ -100,8 +100,11 @@ builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 builder.Services.AddHttpClient<PayOsService>();
 builder.Services.AddHttpClient<OpenRouterService>();
 builder.Services.AddScoped<IOpenRouterService, OpenRouterService>();
-
-
+builder.Services.AddScoped<IProductCategoryService, ProductCategoryService>();
+builder.Services.AddScoped<IProductBrandService, ProductBrandService>();
+builder.Services.AddScoped<IProductStyleService, ProductStyleService>();
+builder.Services.AddScoped<IProductTypeService, ProductTypeService>();
+builder.Services.AddScoped<IProductMaterialService, ProductMaterialService>();
 
 //DI Repository
 builder.Services.AddScoped(typeof(GenericRepository<>));
