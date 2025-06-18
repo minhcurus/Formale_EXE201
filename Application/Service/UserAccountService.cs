@@ -282,9 +282,9 @@ namespace Application.Service
             if (user.DateOfBirth != null)
                 claims.Add(new Claim("dob", user.DateOfBirth.ToString("yyyy-MM-dd")));
             if (!string.IsNullOrEmpty(user.Image_User))
-                claims.Add(new Claim("image_user", user.Image_User));
+                claims.Add(new Claim("imageUser", user.Image_User));
             if (!string.IsNullOrEmpty(user.Background_Image))
-                claims.Add(new Claim("background_image", user.Background_Image));
+                claims.Add(new Claim("imageBackground", user.Background_Image));
             if (!string.IsNullOrEmpty(user.Description))
                 claims.Add(new Claim("description", user.Description));
 
