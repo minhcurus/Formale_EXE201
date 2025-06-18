@@ -18,8 +18,8 @@ namespace Application.DTO
         public string PhoneNumber { get; set; }
         public string Address { get; set; }
         public DateTime DateOfBirth { get; set; }
-        public string? Image_User { get; set; }
-        public string? Background_Image { get; set; }
+        public string? imageUser { get; set; }
+        public string? imageBackground { get; set; }
         public string? Description { get; set; }
         public int? PremiumPackageId { get; set; }
         public string? LoginProvider { get; set; }

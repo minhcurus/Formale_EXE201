@@ -147,7 +147,7 @@ namespace Application.Service
                 _currentUser.Address,
                 _currentUser.DateOfBirth,
                 _currentUser.ImageUser,
-                _currentUser.BackgroundImage,
+                _currentUser.ImageBackground,
                 _currentUser.Description,
                 }
             };
