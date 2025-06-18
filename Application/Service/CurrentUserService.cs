@@ -30,8 +30,8 @@ namespace Application.Service
         public string? Address => User?.FindFirst("address")?.Value;
         public string? Role => User?.FindFirst(ClaimTypes.Role)?.Value;
         public string? DateOfBirth => User?.FindFirst("dob")?.Value;
-        public string? ImageUser => User?.FindFirst("image_user")?.Value;
-        public string? BackgroundImage => User?.FindFirst("background_image")?.Value;
+        public string? ImageUser => User?.FindFirst("imageUser")?.Value;
+        public string? BackgroundImage => User?.FindFirst("imageBackground")?.Value;
         public string? Description => User?.FindFirst("description")?.Value;
     }
 }
