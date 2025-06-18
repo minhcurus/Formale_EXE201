@@ -17,10 +17,8 @@ namespace Application.DTO
         public string PhoneNumber { get; set; }
         public string Address { get; set; }
         public DateTime DateOfBirth { get; set; }
-        [JsonPropertyName("imageUser")]
-        public IFormFile? Image_User { get; set; }
-        [JsonPropertyName("imageBackground")]
-        public IFormFile? Background_Image { get; set; }
+        public IFormFile? imageUser { get; set; }
+        public IFormFile? imageBackground { get; set; }
         public string? Description { get; set; }
     }
 }

@@ -106,11 +106,11 @@ namespace Application.Service
             _mapper.Map(userDTO, user);
 
             // Upload file 
-            if (userDTO.Image_User != null)
-                user.Image_User = await _cloudinaryService.UploadImageAsync(userDTO.Image_User);
+            if (userDTO.imageUser != null)
+                user.Image_User = await _cloudinaryService.UploadImageAsync(userDTO.imageUser);
 
-            if (userDTO.Background_Image != null)
-                user.Background_Image = await _cloudinaryService.UploadImageAsync(userDTO.Background_Image);
+            if (userDTO.imageBackground != null)
+                user.Background_Image = await _cloudinaryService.UploadImageAsync(userDTO.imageBackground);
 
             user.UpdateAt = DateTime.Now;
 
