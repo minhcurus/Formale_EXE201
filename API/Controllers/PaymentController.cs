@@ -1,6 +1,7 @@
 ﻿using Application;
 using Application.DTO;
 using Application.Interface;
+using Application.Service;
 using Application.Validation;
 using Domain.Enum;
 using FluentValidation;
@@ -16,10 +17,11 @@ namespace API.Controllers
     public class PaymentController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
-
-        public PaymentController(IPaymentService paymentService)
+        private readonly IPremiumService _premiumService;
+        public PaymentController(IPaymentService paymentService, IPremiumService premiumService)
         {
             _paymentService = paymentService;
+            _premiumService = premiumService;
         }
 
         [Authorize(Roles = "1")]
@@ -83,6 +85,50 @@ namespace API.Controllers
             var result = await _paymentService.UpdatePaymentStatus(orderCode, status);
             return Ok(result);
         }
+
+        [Authorize(Roles = "1")]
+        [HttpGet("check-payment-status")]
+        public async Task<IActionResult> CheckStatus(long orderCode)
+        {
+            var status = await _paymentService.GetPaymentStatusAsync(orderCode);
+            if (status == "PAID" || status == "SUCCESS")
+            {
+                await _paymentService.UpdatePaymentStatus(orderCode, Status.COMPLETE);
+            }
+            return Ok(new { orderCode, status });
+        }
+
+        [Authorize(Roles = "1")]
+        [HttpGet("premium-payments")]
+        public async Task<IActionResult> GetPremiumPayments()
+        {
+            var result = await _paymentService.GetAllPremiumPayments();
+            return Ok(result);
+        }
+
+        [Authorize(Roles = "1")]
+        [HttpPost("confirm-premium-payment")]
+        public async Task<IActionResult> ConfirmPremiumPayment([FromBody] ConfirmPremiumPaymentRequest request)
+        {
+            // 1. Cập nhật trạng thái
+            var updateStatus = await _paymentService.UpdatePaymentStatus(request.OrderCode, Status.COMPLETE);
+            if (!updateStatus.Success)
+                return BadRequest(updateStatus);
+
+            // 2. Lấy thông tin payment
+            var payment = await _paymentService.GetPaymentByOrderCode(request.OrderCode);
+            if (payment == null || payment.UserId == null || payment.PremiumPackageId == null)
+                return BadRequest("Không tìm thấy giao dịch phù hợp.");
+
+            // 3. Gán gói Premium
+            var result = await _premiumService.UpdateUserPremiumAsync(payment.UserId.Value, payment.PremiumPackageId.Value);
+            return Ok(new
+            {
+                Message = "Xác nhận thanh toán thành công và gán Premium.",
+                User = result
+            });
+        }
+
 
     }
 }

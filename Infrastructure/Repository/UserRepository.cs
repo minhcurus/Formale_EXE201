@@ -29,5 +29,13 @@ namespace Infrastructure.Repository
         {
             return await _context.Users.FirstOrDefaultAsync(e => e.Token == token);
         }
+
+        public async Task<UserAccount> UpdateUserPremium(UserAccount user)
+        {
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+            return user;
+        }
+
     }
 }

@@ -16,6 +16,8 @@ namespace Application.DTO
         public string Description { get; set; }
         public string ReturnUrl { get; set; }
         [JsonIgnore]
+        public int? PremiumPackageId { get; set; }
+        [JsonIgnore]
         public string? BuyerName { get; set; }
         [JsonIgnore]
         public string? BuyerEmail { get; set; }

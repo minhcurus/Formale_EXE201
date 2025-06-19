@@ -28,6 +28,7 @@ namespace API.Mapper
 
             //Payment
             CreateMap<Payment, PaymentDTO>();
+            CreateMap<Payment, PaymentPackageResponse>();
 
             //Order
             CreateMap<OrderDTO, Order>();

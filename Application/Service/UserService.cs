@@ -153,5 +153,21 @@ namespace Application.Service
             };
         }
 
+        public async Task<UserResponse> UpdateUserPremium(UserResponse user)
+        {
+            var existingUser = await _repository.GetById(user.UserId);
+            if (existingUser == null)
+                return null;
+
+            existingUser.PremiumPackageId = user.PremiumPackageId;
+            existingUser.PremiumExpiryDate = user.PremiumExpiryDate;
+            existingUser.UpdateAt = DateTime.UtcNow;
+
+            await _repository.UpdateAsync(existingUser);
+
+            // Fix: Map the updated UserAccount entity to a UserResponse DTO before returning  
+            return _mapper.Map<UserResponse>(existingUser);
+        }
+
     }
 }

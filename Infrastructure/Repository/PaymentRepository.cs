@@ -42,12 +42,21 @@ namespace Infrastructure.Repository
             if (payment == null) return 0;
 
             payment.Status = newStatus;
-            if (newStatus == Status.COMPLETED)
+            if (newStatus == Status.COMPLETE)
             {
                 payment.PaidAt = DateTime.UtcNow;
             }
 
             return await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<Payment>> GetAllPremiumPayments()
+        {
+            return await _context.Payments
+                .Include(p => p.UserAccount)
+                .Include(p => p.PremiumPackage)
+                .Where(p => p.PremiumPackageId != null)
+                .ToListAsync();
         }
 
     }

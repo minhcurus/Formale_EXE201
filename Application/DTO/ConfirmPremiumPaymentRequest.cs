@@ -4,13 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Enum
+namespace Application.DTO
 {
-    public enum Status
+    public class ConfirmPremiumPaymentRequest
     {
-        PENDING,
-        COMPLETE,
-        FAILED,
-        CANCELLED
+        public long OrderCode { get; set; }
     }
 }
