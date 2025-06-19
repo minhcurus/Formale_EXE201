@@ -287,6 +287,11 @@ namespace Application.Service
                 claims.Add(new Claim("imageBackground", user.Background_Image));
             if (!string.IsNullOrEmpty(user.Description))
                 claims.Add(new Claim("description", user.Description));
+            if (user.PremiumPackageId != null)
+                claims.Add(new Claim("premiumPackageId", user.PremiumPackageId.ToString()));
+            if (user.PremiumExpiryDate != null)
+                claims.Add(new Claim("premiumExpiryDate", user.PremiumExpiryDate.Value.ToString("yyyy-MM-ddTHH:mm:ss")));
+
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {

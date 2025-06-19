@@ -149,6 +149,8 @@ namespace Application.Service
                 _currentUser.ImageUser,
                 _currentUser.ImageBackground,
                 _currentUser.Description,
+                _currentUser.PremiumPackageId,
+                _currentUser.PremiumExpiryDate
                 }
             };
         }

@@ -33,5 +33,7 @@ namespace Application.Service
         public string? ImageUser => User?.FindFirst("imageUser")?.Value;
         public string? ImageBackground => User?.FindFirst("imageBackground")?.Value;
         public string? Description => User?.FindFirst("description")?.Value;
+        public string? PremiumPackageId => User?.FindFirst("premiumPackageId")?.Value;
+        public string? PremiumExpiryDate => User?.FindFirst("premiumExpiryDate")?.Value;
     }
 }
