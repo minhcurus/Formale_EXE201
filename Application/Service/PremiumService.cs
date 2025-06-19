@@ -72,9 +72,10 @@ namespace Application.Service
                 BuyerEmail = _currentUser.Email,
                 BuyerPhone = _currentUser.PhoneNumber,
                 BuyerAddress = _currentUser.Address,
-                ReturnUrl = "https://pokemon.com/payment/success",
+                ReturnUrl = "https://spss.io.vn/payment/success",
                 Method = PaymentMethod.PayOs,
                 OrderId = createdOrder.OrderId,
+                PremiumPackageId = package.Id
             };
 
             var paymentResult = await _payment.CreatePayment(paymentDto);
@@ -150,30 +151,20 @@ namespace Application.Service
             };
 
         }
-
         public async Task<UserResponse> UpdateUserPremiumAsync(int userId, int premiumPackageId)
         {
             var user = await _userService.GetUsersById(userId);
-            if (user == null)
-            {
-                return null;
-            }
+            if (user == null) return null;
 
             var premiumPackage = await _premiumRepository.GetPremiumId(premiumPackageId);
-            if (premiumPackage == null)
-            {
-                return null;
-            }
+            if (premiumPackage == null) return null;
 
             user.PremiumPackageId = premiumPackage.Id;
             user.PremiumExpiryDate = DateTime.UtcNow.AddDays(premiumPackage.DurationInDays);
 
-            var userDto = _mapper.Map<UserDTO>(user);
-            var result = await _userService.UpdateProfile(userDto);
+            var updatedUser = await _userService.UpdateUserPremium(user);
 
-            return user;
-
+            return _mapper.Map<UserResponse>(updatedUser);
         }
-
     }
 }

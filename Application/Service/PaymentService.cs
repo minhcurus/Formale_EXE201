@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Application.DTO;
 using Application.Interface;
@@ -65,7 +67,8 @@ namespace Application.Service
                 Signature = payOsResponse.Signature,
                 OrderCode = payOsResponse.OrderCode,
                 Status = Status.PENDING,
-                CreateAt = DateTime.UtcNow
+                CreateAt = DateTime.UtcNow,
+                PremiumPackageId = dto.PremiumPackageId,
             };
 
             await _paymentRepo.CreateAsync(payment);
@@ -177,6 +180,22 @@ namespace Application.Service
                 Message = updated > 0 ? "Cập nhật trạng thái thành công" : "Cập nhật thất bại",
                 Data = updated
             };
+        }
+
+        public async Task<string> GetPaymentStatusAsync(long orderCode)
+        {
+            return await _payOsService.GetPaymentStatusAsync(orderCode);
+        }
+
+        public async Task<List<PaymentPackageResponse>> GetAllPremiumPayments()
+        {
+            var data = await _paymentRepo.GetAllPremiumPayments();
+            return _mapper.Map<List<PaymentPackageResponse>>(data);
+        }
+
+        public async Task<Payment?> GetPaymentByOrderCode(long orderCode)
+        {
+            return await _paymentRepo.GetByOrderCode(orderCode);
         }
 
     }

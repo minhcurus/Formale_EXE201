@@ -98,6 +98,19 @@ namespace Application.Service
             return true;
         }
 
+        public async Task<string> GetPaymentStatusAsync(long orderCode)
+        {
+            var response = await _httpClient.GetAsync($"/v2/payment-requests/{orderCode}");
+            var body = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception($"PayOS get status error: {body}");
+
+            var jsonDoc = JsonDocument.Parse(body);
+            var status = jsonDoc.RootElement.GetProperty("data").GetProperty("status").GetString();
+
+            return status;
+        }
 
     }
 

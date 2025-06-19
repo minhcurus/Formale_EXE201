@@ -16,6 +16,5 @@ namespace Application.Interface
         Task<ResultMessage> UpdatePremiumPackages(PremiunPackageDTO premiumPackage);
         Task<ResultMessage> CreatePremiumOrderAndPayment(PremiumPackageTier tier);
         Task<UserResponse> UpdateUserPremiumAsync(int userId, int premiumPackageId);
-
     }
 }
