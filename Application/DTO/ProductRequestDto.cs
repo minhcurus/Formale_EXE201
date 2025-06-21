@@ -22,6 +22,7 @@ namespace Application.DTO
         public Guid StyleId { get; set; } 
         public Guid CategoryId { get; set; }
         public Guid MaterialId { get; set; }
-        public Guid TypeId { get; set; } 
+        public Guid TypeId { get; set; }
+        public int? UserId { get; set; }
     }
 }

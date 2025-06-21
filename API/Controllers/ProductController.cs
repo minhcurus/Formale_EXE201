@@ -47,6 +47,8 @@ namespace API.Controllers
         // POST /api/products
         [HttpPost]
         [Consumes("multipart/form-data")]
+        [ProducesResponseType(typeof(ProductResponseDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ProductResponseDto>> Create([FromForm] ProductRequestDto dto)
         {
             try
@@ -60,15 +62,14 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
-                var baseError = ex.GetBaseException().Message;
                 return BadRequest(new
                 {
                     message = "Create failed.",
-                    error = baseError
+                    error = ex.GetBaseException().Message
                 });
             }
-
         }
+
 
         // PUT /api/products/{id}
         [HttpPut("{id:guid}")]

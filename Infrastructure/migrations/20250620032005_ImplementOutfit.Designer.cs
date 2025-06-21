@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDBContext))]
-    [Migration("20250529063256_CancelPayment")]
-    partial class CancelPayment
+    [Migration("20250620032005_ImplementOutfit")]
+    partial class ImplementOutfit
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -52,7 +52,55 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Orders", "sps13686_hiTech");
+                });
+
+            modelBuilder.Entity("Domain.Entities.OutfitCombo", b =>
+                {
+                    b.Property<Guid>("ComboId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ComboId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("OutfitCombos", "sps13686_hiTech");
+                });
+
+            modelBuilder.Entity("Domain.Entities.OutfitComboItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CategoryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ComboId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("ComboId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("OutfitComboItems", "sps13686_hiTech");
                 });
 
             modelBuilder.Entity("Domain.Entities.Payment", b =>
@@ -113,8 +161,8 @@ namespace Infrastructure.Migrations
                     b.Property<int>("Method")
                         .HasColumnType("int");
 
-                    b.Property<int>("OrderCode")
-                        .HasColumnType("int");
+                    b.Property<long>("OrderCode")
+                        .HasColumnType("bigint");
 
                     b.Property<int?>("OrderId")
                         .HasColumnType("int");
@@ -143,7 +191,7 @@ namespace Infrastructure.Migrations
                     b.Property<string>("TransactionId")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -154,7 +202,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Payments");
+                    b.ToTable("Payments", "sps13686_hiTech");
                 });
 
             modelBuilder.Entity("Domain.Entities.PremiumPackage", b =>
@@ -169,19 +217,51 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("DurationInDays")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<double>("Price")
-                        .HasColumnType("float");
+                    b.Property<long>("Price")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("Tier")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.ToTable("PremiumPackages");
+                    b.ToTable("PremiumPackages", "sps13686_hiTech");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Description = "Gói cơ bản, hỗ trợ hạn chế.",
+                            DurationInDays = 7,
+                            Name = "Bronze Package",
+                            Price = 50000L,
+                            Tier = 0
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Description = "Gói nâng cao với nhiều tính năng hơn.",
+                            DurationInDays = 30,
+                            Name = "Silver Package",
+                            Price = 120000L,
+                            Tier = 1
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Description = "Gói cao cấp đầy đủ tính năng.",
+                            DurationInDays = 90,
+                            Name = "Gold Package",
+                            Price = 300000L,
+                            Tier = 2
+                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.Product", b =>
@@ -208,13 +288,15 @@ namespace Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ImageURL")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
+
+                    b.Property<bool>("IsSystemCreated")
+                        .HasColumnType("bit");
 
                     b.Property<Guid>("MaterialId")
                         .HasColumnType("uniqueidentifier");
@@ -235,6 +317,9 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("ProductId");
 
                     b.HasIndex("BrandId");
@@ -249,7 +334,9 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("TypeId");
 
-                    b.ToTable("Products");
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Products", "sps13686_hiTech");
                 });
 
             modelBuilder.Entity("Domain.Entities.ProductBrand", b =>
@@ -277,7 +364,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("BrandId");
 
-                    b.ToTable("ProductBrands");
+                    b.ToTable("ProductBrands", "sps13686_hiTech");
                 });
 
             modelBuilder.Entity("Domain.Entities.ProductCategory", b =>
@@ -305,7 +392,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("CategoryId");
 
-                    b.ToTable("ProductCategories");
+                    b.ToTable("ProductCategories", "sps13686_hiTech");
                 });
 
             modelBuilder.Entity("Domain.Entities.ProductCategorySize", b =>
@@ -333,7 +420,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("SizeId");
 
-                    b.ToTable("ProductCategorySizes");
+                    b.ToTable("ProductCategorySizes", "sps13686_hiTech");
                 });
 
             modelBuilder.Entity("Domain.Entities.ProductColor", b =>
@@ -361,7 +448,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("ColorId");
 
-                    b.ToTable("ProductColors");
+                    b.ToTable("ProductColors", "sps13686_hiTech");
                 });
 
             modelBuilder.Entity("Domain.Entities.ProductMaterial", b =>
@@ -389,7 +476,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("MaterialId");
 
-                    b.ToTable("ProductMaterials");
+                    b.ToTable("ProductMaterials", "sps13686_hiTech");
                 });
 
             modelBuilder.Entity("Domain.Entities.ProductSize", b =>
@@ -417,7 +504,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("SizeId");
 
-                    b.ToTable("ProductSizes");
+                    b.ToTable("ProductSizes", "sps13686_hiTech");
                 });
 
             modelBuilder.Entity("Domain.Entities.ProductStyle", b =>
@@ -445,7 +532,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("StyleId");
 
-                    b.ToTable("ProductStyles");
+                    b.ToTable("ProductStyles", "sps13686_hiTech");
                 });
 
             modelBuilder.Entity("Domain.Entities.ProductType", b =>
@@ -473,7 +560,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("TypeId");
 
-                    b.ToTable("ProductTypes");
+                    b.ToTable("ProductTypes", "sps13686_hiTech");
                 });
 
             modelBuilder.Entity("Domain.Entities.Roles", b =>
@@ -494,7 +581,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("RoleId");
 
-                    b.ToTable("Roles");
+                    b.ToTable("Roles", "sps13686_hiTech");
 
                     b.HasData(
                         new
@@ -556,16 +643,24 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("OtpExpiry")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Password")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("PremiumExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("PremiumPackageId")
+                        .HasColumnType("int");
 
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
@@ -589,9 +684,37 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("UserId");
 
+                    b.HasIndex("PremiumPackageId");
+
                     b.HasIndex("RoleId");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", "sps13686_hiTech");
+                });
+
+            modelBuilder.Entity("Domain.Entities.UserCloset", b =>
+                {
+                    b.Property<Guid>("ClosetId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ComboId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ClosetId");
+
+                    b.HasIndex("ComboId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserClosets", "sps13686_hiTech");
                 });
 
             modelBuilder.Entity("Domain.Entities.Order", b =>
@@ -603,6 +726,44 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("UserAccount");
+                });
+
+            modelBuilder.Entity("Domain.Entities.OutfitCombo", b =>
+                {
+                    b.HasOne("Domain.Entities.UserAccount", "User")
+                        .WithMany("OutfitCombos")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Entities.OutfitComboItem", b =>
+                {
+                    b.HasOne("Domain.Entities.ProductCategory", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.OutfitCombo", "Combo")
+                        .WithMany("Items")
+                        .HasForeignKey("ComboId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+
+                    b.Navigation("Combo");
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("Domain.Entities.Payment", b =>
@@ -620,8 +781,7 @@ namespace Infrastructure.Migrations
                     b.HasOne("Domain.Entities.UserAccount", "UserAccount")
                         .WithMany("Payments")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Order");
 
@@ -668,6 +828,10 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Domain.Entities.UserAccount", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
                     b.Navigation("Brand");
 
                     b.Navigation("Category");
@@ -679,6 +843,8 @@ namespace Infrastructure.Migrations
                     b.Navigation("Style");
 
                     b.Navigation("Type");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Domain.Entities.ProductCategorySize", b =>
@@ -702,18 +868,56 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.UserAccount", b =>
                 {
+                    b.HasOne("Domain.Entities.PremiumPackage", "PremiumPackage")
+                        .WithMany()
+                        .HasForeignKey("PremiumPackageId");
+
                     b.HasOne("Domain.Entities.Roles", "Role")
                         .WithMany("Users")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.Navigation("PremiumPackage");
+
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("Domain.Entities.UserCloset", b =>
+                {
+                    b.HasOne("Domain.Entities.OutfitCombo", "Combo")
+                        .WithMany("UserClosets")
+                        .HasForeignKey("ComboId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Domain.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Domain.Entities.UserAccount", "User")
+                        .WithMany("UserClosets")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Combo");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Domain.Entities.Order", b =>
                 {
                     b.Navigation("Payments");
+                });
+
+            modelBuilder.Entity("Domain.Entities.OutfitCombo", b =>
+                {
+                    b.Navigation("Items");
+
+                    b.Navigation("UserClosets");
                 });
 
             modelBuilder.Entity("Domain.Entities.PremiumPackage", b =>
@@ -740,7 +944,11 @@ namespace Infrastructure.Migrations
                 {
                     b.Navigation("Orders");
 
+                    b.Navigation("OutfitCombos");
+
                     b.Navigation("Payments");
+
+                    b.Navigation("UserClosets");
                 });
 #pragma warning restore 612, 618
         }

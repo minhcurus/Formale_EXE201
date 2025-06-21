@@ -105,6 +105,11 @@ builder.Services.AddScoped<IProductBrandService, ProductBrandService>();
 builder.Services.AddScoped<IProductStyleService, ProductStyleService>();
 builder.Services.AddScoped<IProductTypeService, ProductTypeService>();
 builder.Services.AddScoped<IProductMaterialService, ProductMaterialService>();
+builder.Services.AddScoped<IOutfitService, OutfitService>();
+builder.Services.AddScoped<IOutfitComboItemService, OutfitComboItemService>();
+builder.Services.AddScoped<IUserClosetService, UserClosetService>();
+
+
 
 //DI Repository
 builder.Services.AddScoped(typeof(GenericRepository<>));
@@ -122,6 +127,7 @@ builder.Services.AddScoped<ProductMaterialRepository>();
 builder.Services.AddScoped<ProductSizeRepository>();
 builder.Services.AddScoped<ProductStyleRepository>();
 builder.Services.AddScoped<ProductTypeRepository>();
+builder.Services.AddScoped<UserClosetRepository>();
 
 
 builder.Services.AddScoped<PaymentRepository>();

@@ -37,6 +37,8 @@ namespace Domain.Entities
         public Roles Role { get; set; }
         public ICollection<Order>? Orders { get; set; }
         public ICollection<Payment>? Payments { get; set; }
+        public ICollection<OutfitCombo> OutfitCombos { get; set; }
+        public ICollection<UserCloset> UserClosets { get; set; }
 
     }
 }

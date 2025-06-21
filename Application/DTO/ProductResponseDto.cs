@@ -22,5 +22,8 @@ namespace Application.DTO
         public string Category { get; set; }
         public string Material { get; set; }
         public string Type { get; set; }
+        //public Boolean IsSystemCreated { get; set; } 
+
+        //public int? UserId { get; set; }
     }
 }
