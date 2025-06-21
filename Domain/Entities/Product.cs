@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Domain.Base;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Domain.Base;
 
 namespace Domain.Entities
 {
@@ -35,7 +36,17 @@ namespace Domain.Entities
         public Guid TypeId { get; set; } // KIỂU ÁO: ÁO T-SHIRT, ÁO BA LO,...
         public ProductType Type { get; set; }
 
-        
+        public Boolean IsSystemCreated { get; set; } = true; // Được tạo bởi hệ thống hay người dùng
+
+        public int? UserId { get; set; } // Người dùng đã tạo sản phẩm này
+
+        [ForeignKey("UserId")]
+        public UserAccount? User { get; set; }
+
+
+
+
+
 
     }
 }

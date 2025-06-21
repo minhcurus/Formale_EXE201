@@ -35,6 +35,10 @@ namespace Infrastructure
         public DbSet<ProductBrand> ProductBrands { get; set; }
         public DbSet<ProductColor> ProductColors { get; set; }
 
+        public DbSet<UserCloset> UserClosets { get; set; }
+        public DbSet<OutfitCombo> OutfitCombos { get; set; }
+        public DbSet<OutfitComboItem> OutfitComboItems { get; set; }
+
 
         #endregion
         public override int SaveChanges()
@@ -129,6 +133,18 @@ namespace Infrastructure
             });
 
 
+            // Cập nhật trong phần cấu hình UserAccount
+            modelBuilder.Entity<UserAccount>()
+                .HasMany(u => u.OutfitCombos)
+                .WithOne(oc => oc.User)
+                .HasForeignKey(oc => oc.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserAccount>()
+                .HasMany(u => u.UserClosets)
+                .WithOne(uc => uc.User)
+                .HasForeignKey(uc => uc.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Roles>().HasData(
                  new Roles { RoleId = 1, RoleName = "Admin", RoleDescription = "Nguoi quan ly he thong" },
@@ -158,6 +174,9 @@ namespace Infrastructure
             ConfigGuidEntity<ProductSize>(modelBuilder, nameof(ProductSize.SizeId));
             ConfigGuidEntity<ProductStyle>(modelBuilder, nameof(ProductStyle.StyleId));
             ConfigGuidEntity<ProductType>(modelBuilder, nameof(ProductType.TypeId));
+            ConfigGuidEntity<UserCloset>(modelBuilder, nameof(UserCloset.ClosetId));
+            ConfigGuidEntity<OutfitCombo>(modelBuilder, nameof(OutfitCombo.ComboId));
+            ConfigGuidEntity<OutfitComboItem>(modelBuilder, nameof(OutfitComboItem.Id));
 
             modelBuilder.Entity<ProductBrand>()
         .Property(b => b.IsDeleted)
@@ -217,6 +236,8 @@ namespace Infrastructure
                 .HasOne(p => p.Type)
                 .WithMany()
                 .HasForeignKey(p => p.TypeId);
+
+
 
             //PremiumPackage
             modelBuilder.Entity<PremiumPackage>().HasData(
@@ -278,6 +299,64 @@ namespace Infrastructure
             modelBuilder.Entity<ProductCategorySize>().ToTable("ProductCategorySizes", schema);
             modelBuilder.Entity<UserAccount>().ToTable("Users", schema);
             modelBuilder.Entity<Roles>().ToTable("Roles", schema);
+            modelBuilder.Entity<UserCloset>().ToTable("UserClosets", schema);
+            modelBuilder.Entity<OutfitCombo>().ToTable("OutfitCombos", schema);
+            modelBuilder.Entity<OutfitComboItem>().ToTable("OutfitComboItems", schema);
+
+
+
+            // Cấu hình cho UserCloset
+            modelBuilder.Entity<UserCloset>(entity =>
+            {
+                entity.HasKey(uc => uc.ClosetId);
+
+                entity.HasOne(uc => uc.User)
+                    .WithMany(u => u.UserClosets)
+                    .HasForeignKey(uc => uc.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(uc => uc.Product)
+                    .WithMany()
+                    .HasForeignKey(uc => uc.ProductId)
+                    .OnDelete(DeleteBehavior.Restrict); // Optional relationship
+
+                entity.HasOne(uc => uc.Combo)
+                    .WithMany(c => c.UserClosets)
+                    .HasForeignKey(uc => uc.ComboId)
+                    .OnDelete(DeleteBehavior.Restrict); // Optional relationship
+            });
+
+            // Cấu hình cho OutfitCombo
+            modelBuilder.Entity<OutfitCombo>(entity =>
+            {
+                entity.HasKey(oc => oc.ComboId);
+
+                entity.HasOne(oc => oc.User)
+                    .WithMany(u => u.OutfitCombos)
+                    .HasForeignKey(oc => oc.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Cấu hình cho OutfitComboItem
+            modelBuilder.Entity<OutfitComboItem>(entity =>
+            {
+                entity.HasKey(oci => oci.Id);
+
+                entity.HasOne(oci => oci.Combo)
+                    .WithMany(oc => oc.Items)
+                    .HasForeignKey(oci => oci.ComboId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(oci => oci.Product)
+                    .WithMany()
+                    .HasForeignKey(oci => oci.ProductId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(oci => oci.Category)
+                    .WithMany()
+                    .HasForeignKey(oci => oci.CategoryId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
 
         }
 

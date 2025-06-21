@@ -32,7 +32,8 @@ namespace Application.Service
                 model = "deepseek/deepseek-r1-0528-qwen3-8b:free",
                 messages = new[]
                 {
-                    new { role = "system", content = $"You are a fashion assistant. Return only 1 of: {string.Join(", ", styles)}." },
+                    //new { role = "system", content = $"You are a fashion assistant. Return only 1 of: {string.Join(", ", styles)}." },
+                    new { role = "system", content = $"You are a fashion assistant. Based on the following user description, return only one fashion style from this list: {string.Join(", ", styles)}. The returned value must be exactly one style from the list, nothing else, no explanation, no null.Analyze the user’s preferences, occasion, personality, and tone to match the most suitable style." },
                     new { role = "user",   content = prompt }
                 }
             };

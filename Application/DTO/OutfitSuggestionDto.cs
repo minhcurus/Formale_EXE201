@@ -13,5 +13,7 @@ namespace Application.DTO
         public ProductResponseDto Bottoms { get; set; } = default!;
         public ProductResponseDto Footwears { get; set; } = default!;
         public ProductResponseDto Accessories { get; set; } = default!;
+
+        public List<string> MissingNotice { get; set; } = new();
     }
 }

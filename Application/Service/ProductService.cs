@@ -25,6 +25,8 @@ namespace Application.Service
         private readonly ProductSizeRepository _productSizeRepository;
         private readonly ProductStyleRepository _productStyleRepository;
         private readonly ProductTypeRepository _productTypeRepository;
+        private readonly UserClosetRepository _userClosetReposiotry;
+
 
         private readonly IOpenRouterService _ai;
         private readonly ICloudinaryService _cloudinaryService;
@@ -38,6 +40,7 @@ namespace Application.Service
             ProductSizeRepository productSizeRepository,
             ProductStyleRepository productStyleRepository,
             ProductTypeRepository productTypeRepository,
+            UserClosetRepository userClosetRepository,
             IOpenRouterService ai,
             ICloudinaryService cloudinaryService,
             IMapper mapper)
@@ -50,6 +53,7 @@ namespace Application.Service
             _productSizeRepository = productSizeRepository;
             _productStyleRepository = productStyleRepository;
             _productTypeRepository = productTypeRepository;
+            _userClosetReposiotry = userClosetRepository;
             _ai = ai;
             _cloudinaryService = cloudinaryService;
             _mapper = mapper;
@@ -132,13 +136,25 @@ namespace Application.Service
         public async Task<ProductResponseDto> CreateProductAsync(ProductRequestDto dto)
         {
             var product = _mapper.Map<Product>(dto);
-
-            if (dto.ImageFile != null)
-                product.ImageURL = await _cloudinaryService.UploadImageAsync(dto.ImageFile);
-            else
-                product.ImageURL = "";
+            product.ImageURL = dto.ImageFile != null ? await _cloudinaryService.UploadImageAsync(dto.ImageFile): "";
 
             await _productRepository.AddAsync(product);
+
+            //check UserID
+            if (dto.UserId.HasValue)
+            {
+                product.UserId = dto.UserId.Value;
+                product.IsSystemCreated = false;
+
+                var userCloset = new UserCloset
+                {
+                    ClosetId = Guid.NewGuid(),
+                    UserId = dto.UserId.Value,
+                    ProductId = product.ProductId,
+                    ComboId = null
+                };
+                await _userClosetReposiotry.AddAsync(userCloset);
+            }
 
             var productFull = await GetProductWithIncludes()
                 .FirstOrDefaultAsync(p => p.ProductId == product.ProductId);
