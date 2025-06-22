@@ -12,9 +12,13 @@ namespace Application.DTO
     {
         [JsonIgnore]
         public int? UserId { get; set; }
-        public long Amount { get; set; }
+        public decimal Amount { get; set; }
         public string Description { get; set; }
         public string ReturnUrl { get; set; }
+        [JsonIgnore]
+        public string? CancelUrl { get; set; }
+        [JsonIgnore]
+        public string? CheckoutUrl { get; set; }
         [JsonIgnore]
         public int? PremiumPackageId { get; set; }
         [JsonIgnore]
@@ -28,7 +32,7 @@ namespace Application.DTO
         [JsonIgnore]
         public PaymentMethod Method { get; set; }
         [JsonIgnore]
-        public int? OrderId { get; set; }
+        public int OrderId { get; set; }
         [JsonIgnore]
         public string? TransactionId { get; set; }
         [JsonIgnore]

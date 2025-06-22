@@ -10,7 +10,7 @@ namespace Application.DTO
     public class PaymentPackageResponse
     {
         public int? UserId { get; set; }
-        public long Amount { get; set; }
+        public decimal Amount { get; set; }
         public string Description { get; set; }
         public Status Status { get; set; }
         public string? TransactionId { get; set; }

@@ -18,12 +18,26 @@ namespace Infrastructure.Repository
 
         public async Task<List<Order>> GetAll()
         {
-            return await _context.Orders.ToListAsync();
+            var orders = await _context.Orders
+                .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.Product) 
+                .ToListAsync();
+            return orders;
         }
 
         public async Task<Order> GetOrderId(int id)
         {
-            return await _context.Orders.FirstOrDefaultAsync(e => e.OrderId == id);
+            return await _context.Orders
+                .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.Product)
+                .FirstOrDefaultAsync(e => e.OrderId == id);
+        }
+
+        public async Task<int> CreateAsync(Order order)
+        {
+            await _context.Orders.AddAsync(order);
+            await _context.SaveChangesAsync(); 
+            return order.OrderId; 
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Application.DTO;
 using Application.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,13 +17,14 @@ namespace API.Controllers
             _orderService = orderService;
         }
 
-        [HttpPost("create")]
-        public async Task<IActionResult> CreateOrder([FromBody] OrderDTO orderDto)
+        [Authorize]
+        [HttpPost("create-order")]
+        public async Task<IActionResult> CreateOrder()
         {
-            var result = await _orderService.Create(orderDto);
-            return Ok(result);
+            return Ok(await _orderService.CreateOrderFromCart());
         }
 
+        [Authorize(Roles = "1")]
         [HttpGet("all")]
         public async Task<IActionResult> GetAllOrders()
         {
@@ -30,7 +32,8 @@ namespace API.Controllers
             return Ok(result);
         }
 
-        [HttpGet("{orderId}")]
+        [Authorize(Roles = "1")]
+        [HttpGet("orderId")]
         public async Task<IActionResult> GetOrderById(int orderId)
         {
             var result = await _orderService.GetOrderId(orderId);

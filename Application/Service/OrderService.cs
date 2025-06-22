@@ -7,6 +7,7 @@ using Application.DTO;
 using Application.Interface;
 using AutoMapper;
 using Domain.Entities;
+using Domain.Enum;
 using Infrastructure.Repository;
 
 namespace Application.Service
@@ -14,11 +15,19 @@ namespace Application.Service
     public class OrderService : IOrderService
     {
         private readonly OrderRepository _repository;
+        private readonly CartRepository _cartService;
+        private readonly CurrentUserService _currentUser;
+        private readonly IPaymentService _paymentService;
         private readonly IMapper _mapper;
-        public OrderService(OrderRepository repository, IMapper mapper) 
+        private readonly IProductService _productService;
+        public OrderService(OrderRepository repository, IMapper mapper, CartRepository cartService, CurrentUserService currentUserService,IPaymentService paymentService, IProductService productService) 
         { 
             _repository = repository;
             _mapper = mapper;
+            _cartService = cartService;
+            _currentUser = currentUserService;
+            _paymentService = paymentService;
+            _productService = productService;
         }
 
         public async Task<ResultMessage> Create(OrderDTO orderDTO)
@@ -67,6 +76,105 @@ namespace Application.Service
                 Data = map,
             };
         }
+
+        public async Task<ResultMessage> CreateOrderFromCart()
+        {
+            var cart = await _cartService.GetCartByUserId(_currentUser.UserId.Value);
+            if (cart == null || cart.Items.Count == 0)
+            {
+                return new ResultMessage
+                {
+                    Success = false,
+                    Message = "Giỏ hàng trống",
+                    Data = null
+                };
+            }
+
+            var order = new Order
+            {
+                UserId = _currentUser.UserId.Value,
+                CreatedAt = DateTime.UtcNow,
+                Status = Status.PENDING,
+                OrderItems = new List<OrderItem>(),
+                TotalPrice = 0
+            };
+
+            foreach (var item in cart.Items)
+            {
+                var find = await _productService.GetByIdAsync(item.ProductId);
+                var orderItem = new OrderItem
+                {
+                    ProductId = item.ProductId,
+                    ProductName = find.Name,
+                    Quantity = item.Quantity,
+                };
+
+                order.OrderItems.Add(orderItem);
+                order.TotalPrice += item.Product.Price * item.Quantity;
+            }
+
+            var orderId = await _repository.CreateAsync(order);
+
+            // Xóa giỏ hàng
+            cart.Items.Clear();
+            await _cartService.SaveChangesAsync();
+
+            // Lấy lại đơn hàng vừa tạo
+            var createdOrder = await _repository.GetOrderId(orderId);
+
+            // Gọi luôn PaymentService để tạo thanh toán
+            var paymentRequest = new PaymentRequestDTO
+            {
+                OrderId = createdOrder.OrderId,
+                Amount = createdOrder.TotalPrice,
+                Description = "Thanh toán đơn hàng",
+                ReturnUrl = "https://spss.io.vn/payment/success",
+                CancelUrl = "https://spss.io.vn/payment/cancel"
+            };
+
+            try
+            {
+                var paymentResult = await _paymentService.CreatePayment(paymentRequest);
+                if (!paymentResult.Success)
+                {
+                    return new ResultMessage
+                    {
+                        Success = false,
+                        Message = "Tạo đơn hàng thành công nhưng lỗi khi tạo thanh toán",
+                        Data = new
+                        {
+                            OrderId = createdOrder.OrderId
+                        }
+                    };
+                }
+
+                return new ResultMessage
+                {
+                    Success = true,
+                    Message = "Đặt hàng và tạo thanh toán thành công",
+                    Data = new
+                    {
+                        OrderId = createdOrder.OrderId,
+                        PaymentUrl = ((dynamic)paymentResult.Data).paymentUrl
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                // Nếu lỗi trong lúc gọi PayOS
+                return new ResultMessage
+                {
+                    Success = false,
+                    Message = $"Tạo đơn hàng thành công nhưng lỗi khi gọi cổng thanh toán: {ex.Message}",
+                    Data = new
+                    {
+                        OrderId = createdOrder.OrderId
+                    }
+                };
+            }
+        }
+
+
     }
-   
+
 }

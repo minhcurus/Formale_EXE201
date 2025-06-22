@@ -14,6 +14,7 @@ namespace Infrastructure.Repository
         public ProductRepository(AppDBContext context) : base(context)
         {
         }
+
     }
 
 }

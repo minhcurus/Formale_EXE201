@@ -21,7 +21,9 @@ namespace Infrastructure
         public DbSet<UserAccount> Users { get; set; }
         public DbSet<Roles> Roles { get; set; }
         public DbSet<Payment> Payments { get; set; }
-
+        public DbSet<Cart> Carts { get; set; }
+        public DbSet<CartItem> CartItems { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<PremiumPackage> PremiumPackages { get; set; }
 
@@ -302,6 +304,9 @@ namespace Infrastructure
             modelBuilder.Entity<UserCloset>().ToTable("UserClosets", schema);
             modelBuilder.Entity<OutfitCombo>().ToTable("OutfitCombos", schema);
             modelBuilder.Entity<OutfitComboItem>().ToTable("OutfitComboItems", schema);
+            modelBuilder.Entity<Cart>().ToTable("Carts", schema);
+            modelBuilder.Entity<CartItem>().ToTable("CartItems", schema);
+            modelBuilder.Entity<OrderItem>().ToTable("OrderItems", schema);
 
 
 
@@ -357,6 +362,37 @@ namespace Infrastructure
                     .HasForeignKey(oci => oci.CategoryId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
+
+            modelBuilder.Entity<Cart>()
+                .HasMany(c => c.Items)
+                .WithOne(ci => ci.Cart)
+                .HasForeignKey(ci => ci.CartId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CartItem>()
+                .HasOne(ci => ci.Product)
+                .WithMany()
+                .HasForeignKey(ci => ci.ProductId)
+                .OnDelete(DeleteBehavior.Restrict); // tránh xóa sp kéo theo giỏ hàng
+
+            modelBuilder.Entity<Cart>()
+                .HasOne(c => c.User)
+                .WithOne(u => u.Cart)
+                .HasForeignKey<Cart>(c => c.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Order>()
+                .HasMany(o => o.OrderItems)
+                .WithOne(oi => oi.Order)
+                .HasForeignKey(oi => oi.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<OrderItem>()
+                .HasOne(oi => oi.Product)
+                .WithMany()
+                .HasForeignKey(oi => oi.ProductId)
+                .OnDelete(DeleteBehavior.Restrict);
+
 
         }
 

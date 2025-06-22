@@ -35,6 +35,7 @@ namespace Domain.Entities
         public PremiumPackage? PremiumPackage { get; set; }
         public DateTime? PremiumExpiryDate { get; set; }
         public Roles Role { get; set; }
+        public virtual Cart Cart { get; set; }
         public ICollection<Order>? Orders { get; set; }
         public ICollection<Payment>? Payments { get; set; }
         public ICollection<OutfitCombo> OutfitCombos { get; set; }

@@ -13,7 +13,7 @@ namespace Application.DTO
     {
         [JsonIgnore]
         public int? UserId { get; set; }
-        public long Amount { get; set; }
+        public decimal Amount { get; set; }
         public string Description { get; set; }
         public string ReturnUrl { get; set; }
         public string BuyerName { get; set; }
