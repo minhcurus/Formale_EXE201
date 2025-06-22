@@ -29,10 +29,14 @@ namespace API.Mapper
             //Payment
             CreateMap<Payment, PaymentDTO>();
             CreateMap<Payment, PaymentPackageResponse>();
+            CreateMap<Payment, PaymentAllDTO>();
 
             //Order
+            CreateMap<OrderItem, OrderItemDTO>();
             CreateMap<OrderDTO, Order>();
-            CreateMap<Order, OrderDTO>();
+            CreateMap<Order, OrderDTO>()
+                .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.OrderItems));
+
 
             //PremiunPackage
             CreateMap<PremiumPackage, PremiunPackageDTO>();

@@ -13,12 +13,15 @@ namespace Domain.Entities
         [Key]
         public int OrderId { get; set; }
         public int UserId { get; set; }
-        public double TotalPrice { get; set; }
+        public decimal TotalPrice { get; set; }
         public Status Status { get; set; } = Status.PENDING;
+        public DateTime? PaidAt { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public UserAccount UserAccount { get; set; }
         public ICollection<Payment>? Payments { get; set; }
+        public ICollection<Product> Products { get; set; }
+        public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 
     }
 }

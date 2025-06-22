@@ -16,7 +16,7 @@ namespace Domain.Entities
         public int? OrderId { get; set; }
         public int? PremiumPackageId { get; set; }
         public long OrderCode { get; set; }          
-        public long Amount { get; set; }             
+        public decimal Amount { get; set; }             
         public string Description { get; set; }      
         public string BuyerName { get; set; }
         public string BuyerEmail { get; set; }

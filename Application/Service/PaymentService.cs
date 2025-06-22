@@ -62,6 +62,7 @@ namespace Application.Service
                 BuyerAddress = _currentUser.Address,
                 Method = (PaymentMethod)2,
                 ReturnUrl = dto.ReturnUrl,
+                CancelUrl = dto.CancelUrl,
                 TransactionId = payOsResponse.PaymentLinkId,
                 CheckoutUrl = payOsResponse.CheckoutUrl, 
                 Signature = payOsResponse.Signature,
@@ -131,10 +132,10 @@ namespace Application.Service
             return new ResultMessage { Success = true, Message = "Payment cancelled successfully" };
         }
 
-        public async Task<List<PaymentDTO>> GetAllPayment()
+        public async Task<List<PaymentAllDTO>> GetAllPayment()
         {
             var get = await _paymentRepo.GetAllAsync();
-            return _mapper.Map<List<PaymentDTO>>(get);
+            return _mapper.Map<List<PaymentAllDTO>>(get);
 
         }
 

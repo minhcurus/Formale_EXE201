@@ -49,6 +49,7 @@ namespace Application.Service
                 UserId = _currentUser.UserId,
                 TotalPrice = package.Price,
                 Status = Status.PENDING,
+                CreatedAt = DateTime.UtcNow,
             };
 
 
@@ -72,7 +73,8 @@ namespace Application.Service
                 BuyerEmail = _currentUser.Email,
                 BuyerPhone = _currentUser.PhoneNumber,
                 BuyerAddress = _currentUser.Address,
-                ReturnUrl = "https://spss.io.vn/payment/success",
+                ReturnUrl = "myapp://payment-success",
+                CancelUrl = "myapp://payment-success",
                 Method = PaymentMethod.PayOs,
                 OrderId = createdOrder.OrderId,
                 PremiumPackageId = package.Id

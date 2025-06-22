@@ -14,7 +14,7 @@ namespace Application.Interface
         Task<ResultMessage> CreatePayment(PaymentRequestDTO dto);
         Task<ResultMessage> SearchPayment(SearchTransactionDTO searchTransactionDTO);
         Task<ResultMessage> UpdatePaymentStatus(long orderCode, Status newStatus);
-        Task<List<PaymentDTO>> GetAllPayment();
+        Task<List<PaymentAllDTO>> GetAllPayment();
         Task<ResultMessage> GetPaymentByUser();
         Task<ResultMessage> CancelPayment(long orderCode, string reason);
         Task<string> GetPaymentStatusAsync(long orderCode);

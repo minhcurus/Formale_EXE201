@@ -13,5 +13,7 @@ namespace Application.Interface
         Task<List<OrderDTO>> GetAll();
         Task<ResultMessage> GetOrderId(int id);
         Task<ResultMessage> Create(OrderDTO orderDTO);
+        Task<ResultMessage> CreateOrderFromCart();
+
     }
 }
