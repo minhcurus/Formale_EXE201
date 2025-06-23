@@ -43,7 +43,7 @@ namespace Application.Service
             _mapper = mapper;
         }
 
-        public async Task<OutfitSuggestionDto?> SuggestAndSaveComboFromClosetByPromptAsync(int userId, string prompt)
+        public async Task<OutfitSuggestionDto?> SuggestComboFromClosetAsync(int userId, string prompt)
         {
             var styleName = await _ai.ClassifyAsync(prompt);
             if (string.IsNullOrEmpty(styleName)) return null;
@@ -81,28 +81,6 @@ namespace Application.Service
             var footwear = await FallbackFindAsync(catFootwear, style, userProducts);
             var accessory = await FallbackFindAsync(catAccessory, style, userProducts);
 
-            var comboId = Guid.NewGuid();
-            var items = _outfitComboItemService.CreateItemsFromProducts(comboId, new[] { top, bottom, footwear, accessory });
-
-            var combo = new OutfitCombo
-            {
-                ComboId = comboId,
-                Name = $"AI Suggested Combo - {styleName}",
-                Description = $"Generated from user closet by AI style '{styleName}'",
-                UserId = userId,
-                Items = items
-            };
-
-            await _outfitComboRepository.AddAsync(combo);
-
-            var userClosetCombo = new UserCloset
-            {
-                ClosetId = Guid.NewGuid(),
-                UserId = userId,
-                ComboId = comboId
-            };
-            await _userClosetRepository.AddAsync(userClosetCombo);
-
             return new OutfitSuggestionDto
             {
                 Style = styleName,
@@ -119,6 +97,43 @@ namespace Application.Service
                 }.Where(x => x != null).ToList()
             };
         }
+
+        public async Task<Guid> SaveSuggestedComboAsync(int userId, OutfitSuggestionDto suggestion)
+        {
+            var comboId = Guid.NewGuid();
+
+            var products = new List<Product?>
+    {
+        suggestion.Tops != null ? _mapper.Map<Product>(suggestion.Tops) : null,
+        suggestion.Bottoms != null ? _mapper.Map<Product>(suggestion.Bottoms) : null,
+        suggestion.Footwears != null ? _mapper.Map<Product>(suggestion.Footwears) : null,
+        suggestion.Accessories != null ? _mapper.Map<Product>(suggestion.Accessories) : null
+    }.Where(p => p != null).ToArray();
+
+            var items = _outfitComboItemService.CreateItemsFromProducts(comboId, products);
+
+            var combo = new OutfitCombo
+            {
+                ComboId = comboId,
+                Name = $"User Saved Combo - {suggestion.Style}",
+                Description = $"Saved by user from AI suggestion",
+                UserId = userId,
+                Items = items
+            };
+
+            await _outfitComboRepository.AddAsync(combo);
+
+            var userClosetCombo = new UserCloset
+            {
+                ClosetId = Guid.NewGuid(),
+                UserId = userId,
+                ComboId = comboId
+            };
+            await _userClosetRepository.AddAsync(userClosetCombo);
+
+            return comboId;
+        }
+
 
         private async Task<Product?> FallbackFindAsync(Guid categoryId, ProductStyle? style, List<Product>? userProducts)
         {

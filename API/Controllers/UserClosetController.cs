@@ -1,5 +1,7 @@
 ﻿using Application.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace API.Controllers
 {
@@ -14,6 +16,8 @@ namespace API.Controllers
             _userClosetService = userClosetService;
         }
 
+
+        [Authorize(Roles = "1")]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -21,6 +25,7 @@ namespace API.Controllers
             return Ok(data);
         }
 
+        [Authorize(Roles = "1")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
@@ -29,17 +34,38 @@ namespace API.Controllers
             return Ok(data);
         }
 
+
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
+            var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
+
+            // Kiểm tra closet có tồn tại và thuộc user
+            var closet = await _userClosetService.GetByIdAsync(id);
+            if (closet == null)
+                return NotFound();
+
+            if (closet.UserId != currentUserId)
+                return Forbid();
+
             var success = await _userClosetService.DeleteByIdAsync(id);
-            if (!success) return NotFound();
+            if (!success)
+                return StatusCode(500, "Xóa thất bại.");
+
             return Ok(new { message = "Deleted successfully" });
         }
 
+
+        [Authorize]
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetByUserId(int userId)
         {
+            var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
+
+            if (userId != currentUserId)
+                return Forbid();
+
             var data = await _userClosetService.GetByUserIdAsync(userId);
             return Ok(data);
         }
