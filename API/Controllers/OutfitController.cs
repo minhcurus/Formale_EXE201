@@ -18,6 +18,7 @@ namespace API.Controllers
             _outfitService = outfitService;
         }
 
+        [Authorize]
         [HttpPost("suggest")]
         public async Task<IActionResult> SuggestCombo([FromQuery] int userId, [FromBody] string prompt)
         {
@@ -32,6 +33,7 @@ namespace API.Controllers
             return Ok(suggestion);
         }
 
+        [Authorize]
         // API lưu combo khi user đồng ý
         [HttpPost("save")]
         public async Task<IActionResult> SaveCombo([FromQuery] int userId, [FromBody] OutfitSuggestionDto suggestion)
