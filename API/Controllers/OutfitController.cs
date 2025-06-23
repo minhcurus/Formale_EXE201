@@ -49,20 +49,20 @@ namespace API.Controllers
 
         [Authorize]
         [HttpGet("{comboId}")]
-        public async Task<IActionResult> GetComboDetail([FromQuery] int userId, [FromQuery] Guid comboId)
+        public async Task<IActionResult> GetComboDetail(Guid comboId)
         {
             var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
-
-            // So sánh userId từ query với userId trong token
-            if (userId != currentUserId)
-                return Forbid();
 
             var result = await _outfitService.GetComboDetailsAsync(comboId);
             if (result == null)
                 return NotFound("Combo not found.");
 
+            if (result.UserId != currentUserId)
+                return Forbid();
+
             return Ok(result);
         }
+
 
     }
 }
