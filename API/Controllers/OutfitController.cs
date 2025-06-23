@@ -36,14 +36,15 @@ namespace API.Controllers
         [Authorize]
         // API lưu combo khi user đồng ý
         [HttpPost("save")]
-        public async Task<IActionResult> SaveCombo([FromQuery] int userId, [FromBody] OutfitSuggestionDto suggestion)
+        public async Task<IActionResult> SaveSuggestedCombo([FromQuery] int userId, [FromQuery] Guid comboId)
         {
             var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
-            if (userId != currentUserId)
-                return Forbid();
+            if (userId != currentUserId) return Unauthorized("Không có quyền lưu combo này.");
 
-            var comboId = await _outfitService.SaveSuggestedComboAsync(userId, suggestion);
-            return Ok(new { ComboId = comboId, Message = "Lưu combo thành công." });
+            var success = await _outfitService.SaveSuggestedComboAsync(userId, comboId);
+            if (!success) return NotFound("Combo không tồn tại hoặc không thuộc về người dùng.");
+
+            return Ok(new { message = "Combo đã được lưu vào closet." });
         }
 
         [Authorize]
