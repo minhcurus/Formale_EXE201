@@ -9,6 +9,7 @@ namespace Application.DTO
     public class OutfitSuggestionDto
     { 
         public string Style { get; set; } = default!;
+        public Guid ComboId { get; set; } = default!;
         public ProductResponseDto Tops { get; set; } = default!;
         public ProductResponseDto Bottoms { get; set; } = default!;
         public ProductResponseDto Footwears { get; set; } = default!;

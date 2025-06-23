@@ -89,7 +89,7 @@ namespace Application.Service
             {
                 ComboId = comboId,
                 Name = $"AI Suggested Combo - {styleName}",
-                Description = $"Generated from AI, waiting user confirmation",
+                Description = $"Generated from AI, from userId {userId}",
                 UserId = userId,
                 Items = items
             };
@@ -100,6 +100,7 @@ namespace Application.Service
             return new OutfitSuggestionDto
             {
                 Style = styleName,
+                ComboId = comboId,
                 Tops = top != null ? _mapper.Map<ProductResponseDto>(top) : null,
                 Bottoms = bottom != null ? _mapper.Map<ProductResponseDto>(bottom) : null,
                 Footwears = footwear != null ? _mapper.Map<ProductResponseDto>(footwear) : null,
@@ -183,6 +184,7 @@ namespace Application.Service
                 ComboId = combo.ComboId,
                 Name = combo.Name,
                 Description = combo.Description,
+                UserId = combo.UserId,
                 Items = combo.Items
                     .Select(i => _mapper.Map<ProductResponseDto>(i.Product))
                     .ToList()

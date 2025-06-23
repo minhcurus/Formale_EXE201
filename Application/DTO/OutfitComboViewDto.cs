@@ -11,7 +11,7 @@ namespace Application.DTO
         public Guid ComboId { get; set; }
         public string? Name { get; set; }
         public string? Description { get; set; }
-
+        public int UserId { get; set; }
         public List<ProductResponseDto> Items { get; set; } = new();
     }
 }
