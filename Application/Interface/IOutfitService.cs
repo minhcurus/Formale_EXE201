@@ -9,7 +9,8 @@ namespace Application.Interface
 {
     public interface IOutfitService
     {
-         Task<OutfitSuggestionDto?> SuggestAndSaveComboFromClosetByPromptAsync(int userId, string prompt);
+        Task<OutfitSuggestionDto?> SuggestComboFromClosetAsync(int userId, string prompt);
+        Task<Guid> SaveSuggestedComboAsync(int userId, OutfitSuggestionDto suggestion);
         Task<OutfitComboViewDto?> GetComboDetailsAsync(Guid comboId);
     }
 }
