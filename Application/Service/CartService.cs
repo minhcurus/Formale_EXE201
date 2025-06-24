@@ -40,7 +40,9 @@ namespace Application.Service
                 i.ProductId,
                 ProductName = i.Product.Name,
                 i.Quantity,
-                i.Product.Price
+                i.Product.Price,
+                i.Product.Description,
+                i.Product.ImageURL,
             });
 
             return new ResultMessage
@@ -94,7 +96,9 @@ namespace Application.Service
                 i.ProductId,
                 i.Product.Name,
                 i.Quantity,
-                i.Product.Price
+                i.Product.Price,
+                i.Product.Description,
+                i.Product.ImageURL
             });
 
             return new ResultMessage

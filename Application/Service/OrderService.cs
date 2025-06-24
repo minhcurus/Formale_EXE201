@@ -107,6 +107,9 @@ namespace Application.Service
                     ProductId = item.ProductId,
                     ProductName = find.Name,
                     Quantity = item.Quantity,
+                    Price = find.Price,
+                    Description = find.Description,
+                    ImageURL = find.ImageURL,
                 };
 
                 order.OrderItems.Add(orderItem);
