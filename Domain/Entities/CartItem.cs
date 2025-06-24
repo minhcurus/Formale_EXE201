@@ -15,6 +15,8 @@ namespace Domain.Entities
         public int CartId { get; set; }
         public Guid ProductId { get; set; }
         public int Quantity { get; set; }
+        public string? ImageURL { get; set; }
+        public string? Description { get; set; }
         [JsonIgnore]
         public decimal Price { get; set; }
         [JsonIgnore]
