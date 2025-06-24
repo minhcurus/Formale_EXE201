@@ -41,6 +41,11 @@ namespace API.Mapper
             //PremiunPackage
             CreateMap<PremiumPackage, PremiunPackageDTO>();
 
+            //Feedback
+            CreateMap<FeedbackRequestDto, Feedback>();
+            CreateMap<Feedback, FeedbackDto>()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
+
         }
 
     }
