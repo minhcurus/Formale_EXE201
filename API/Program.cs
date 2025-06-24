@@ -109,6 +109,7 @@ builder.Services.AddScoped<IOutfitService, OutfitService>();
 builder.Services.AddScoped<IOutfitComboItemService, OutfitComboItemService>();
 builder.Services.AddScoped<IUserClosetService, UserClosetService>();
 builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 
 
 
@@ -130,6 +131,7 @@ builder.Services.AddScoped<ProductStyleRepository>();
 builder.Services.AddScoped<ProductTypeRepository>();
 builder.Services.AddScoped<UserClosetRepository>();
 builder.Services.AddScoped<CartRepository>();
+builder.Services.AddScoped<FeedbackRepository>();
 
 
 builder.Services.AddScoped<PaymentRepository>();

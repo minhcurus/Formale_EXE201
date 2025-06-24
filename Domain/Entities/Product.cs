@@ -44,6 +44,10 @@ namespace Domain.Entities
         public UserAccount? User { get; set; }
 
 
+        public int TotalFeedbacks { get; set; } = 0;
+      
+        public double AverageRating { get; set; } = 0.0;
+        public ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
 
 
 

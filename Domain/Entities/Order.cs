@@ -20,7 +20,7 @@ namespace Domain.Entities
         public DateTime UpdatedAt { get; set; }
         public UserAccount UserAccount { get; set; }
         public ICollection<Payment>? Payments { get; set; }
-        public ICollection<Product> Products { get; set; }
+        //public ICollection<Product> Products { get; set; }
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 
     }

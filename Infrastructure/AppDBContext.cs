@@ -41,6 +41,8 @@ namespace Infrastructure
         public DbSet<OutfitCombo> OutfitCombos { get; set; }
         public DbSet<OutfitComboItem> OutfitComboItems { get; set; }
 
+        public DbSet<Feedback> Feedbacks { get; set; }
+
 
         #endregion
         public override int SaveChanges()
@@ -82,6 +84,27 @@ namespace Infrastructure
                 modelBuilder.Entity(t.ClrType).Property<bool>("IsDeleted")
                             .HasDefaultValue(false);
             }
+
+            modelBuilder.Entity<Feedback>(entity =>
+            {
+                entity.HasKey(f => f.FeedbackId);
+
+                entity.Property(f => f.FeedbackId)
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uniqueidentifier");
+
+                entity.Property(f => f.Description).HasMaxLength(1000);
+
+                entity.HasOne(f => f.User)
+                    .WithMany()
+                    .HasForeignKey(f => f.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(f => f.Product)
+                    .WithMany(p => p.Feedbacks)
+                    .HasForeignKey(f => f.ProductId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
 
             modelBuilder.Entity<Roles>()
                 .HasMany(r => r.Users)
@@ -179,6 +202,7 @@ namespace Infrastructure
             ConfigGuidEntity<UserCloset>(modelBuilder, nameof(UserCloset.ClosetId));
             ConfigGuidEntity<OutfitCombo>(modelBuilder, nameof(OutfitCombo.ComboId));
             ConfigGuidEntity<OutfitComboItem>(modelBuilder, nameof(OutfitComboItem.Id));
+            ConfigGuidEntity<Feedback>(modelBuilder, nameof(Feedback.FeedbackId));
 
             modelBuilder.Entity<ProductBrand>()
         .Property(b => b.IsDeleted)
@@ -307,6 +331,7 @@ namespace Infrastructure
             modelBuilder.Entity<Cart>().ToTable("Carts", schema);
             modelBuilder.Entity<CartItem>().ToTable("CartItems", schema);
             modelBuilder.Entity<OrderItem>().ToTable("OrderItems", schema);
+            modelBuilder.Entity<Feedback>().ToTable("Feedbacks", schema);
 
 
 

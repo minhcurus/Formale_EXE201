@@ -97,7 +97,9 @@ namespace Application.Service
 
         public async Task<List<ProductResponseDto>> GetAllAsync()
         {
-            var products = await _productRepository.GetAllAsync();
+            var products = (await _productRepository.GetAllAsync())
+        .Where(p => p.IsSystemCreated)
+        .ToList();
 
             // Lấy dữ liệu lookup 1 lần cho tất cả sản phẩm
             var brands = (await _productBrandRepository.GetAllAsync()).ToDictionary(x => x.BrandId, x => x.BrandName);
