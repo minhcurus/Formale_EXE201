@@ -10,6 +10,7 @@ namespace Application.Interface
     {
         Task<ResultMessage> GetCurrentCart();
         Task<ResultMessage> AddToCart(Guid productId, int quantity);
+        Task<ResultMessage> ReduceQuantity(Guid productId, int quantity);
         Task<ResultMessage> RemoveFromCart(int cartItemId);
         Task<ResultMessage> PrepareOrder();
 

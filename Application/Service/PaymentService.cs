@@ -121,7 +121,18 @@ namespace Application.Service
             if (payment.Status != Status.PENDING)
                 return new ResultMessage { Success = false, Message = "Only PENDING payments can be cancelled." };
 
-            await _payOsService.CancelPaymentAsync(orderCode, reason);
+            try
+            {
+                await _payOsService.CancelPaymentAsync(orderCode, reason);
+            }
+            catch (Exception ex)
+            {
+                return new ResultMessage
+                {
+                    Success = false,
+                    Message = $"Failed to cancel on PayOS: {ex.Message}"
+                };
+            }
 
             payment.Status = Status.CANCELLED;
             payment.CancelReason = reason;
@@ -129,7 +140,17 @@ namespace Application.Service
 
             await _paymentRepo.UpdateAsync(payment);
 
-            return new ResultMessage { Success = true, Message = "Payment cancelled successfully" };
+            return new ResultMessage
+            {
+                Success = true,
+                Message = "Payment cancelled successfully",
+                Data = new
+                {
+                    orderCode = payment.OrderCode,
+                    cancelledAt = payment.CancelledAt,
+                    reason = payment.CancelReason
+                }
+            };
         }
 
         public async Task<List<PaymentAllDTO>> GetAllPayment()

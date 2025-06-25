@@ -158,7 +158,7 @@ namespace Application.Service
                     Data = new
                     {
                         OrderId = createdOrder.OrderId,
-                        PaymentUrl = ((dynamic)paymentResult.Data).paymentUrl
+                        PaymentUrl = paymentResult.Data
                     }
                 };
             }

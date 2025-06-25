@@ -73,7 +73,7 @@ namespace Application.Service
                 CheckoutUrl = payOsResponse.Data?.CheckoutUrl,
                 PaymentLinkId = payOsResponse.Data?.PaymentLinkId ?? "",
                 OrderCode = payOsResponse.Data.OrderCode,
-                Signature = payOsResponse.Signature
+                Signature = payOsResponse.Signature,
             };
         }
 
