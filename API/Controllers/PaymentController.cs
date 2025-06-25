@@ -86,6 +86,7 @@ namespace API.Controllers
             return Ok(result);
         }
 
+        [Authorize]
         [HttpGet("check-payment-status")]
         public async Task<IActionResult> CheckStatus(long orderCode)
         {

@@ -28,6 +28,13 @@ namespace API.Controllers
         }
 
         [Authorize]
+        [HttpPost("minus-from-cart")]
+        public async Task<IActionResult> MinusFromCart(Guid productId, int quantity)
+        {
+            return Ok(await _cartService.ReduceQuantity(productId, quantity));
+        }
+
+        [Authorize]
         [HttpGet("prepare-order")]
         public async Task<IActionResult> PrepareOrder()
         {

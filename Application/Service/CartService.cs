@@ -19,6 +19,7 @@ namespace Application.Service
         { 
             _currentUser = currentUserService;
             _cartRepository = cartRepository;
+
         }
 
         public async Task<ResultMessage> GetCurrentCart()
@@ -125,7 +126,6 @@ namespace Application.Service
             }
 
             var existingItem = cart.Items.FirstOrDefault(i => i.ProductId == productId);
-
             if (existingItem != null)
             {
                 existingItem.Quantity += quantity;
@@ -149,6 +149,41 @@ namespace Application.Service
             };
         }
 
+        public async Task<ResultMessage> ReduceQuantity(Guid productId, int quantity)
+        {
+            var cart = await _cartRepository.GetCartByUserId(_currentUser.UserId.Value);
+            
+            if (cart == null)
+            {
+                cart = new Cart
+                {
+                    UserId = _currentUser.UserId.Value,
+                    Items = new List<CartItem>()
+                };
+                await _cartRepository.AddAsync(cart);
+            }
+
+            var existingItem = cart.Items.FirstOrDefault(i => i.ProductId == productId);
+
+            if (existingItem != null)
+            {
+                existingItem.Quantity = Math.Max(existingItem.Quantity - quantity, 0);
+                // Nếu số lượng nhỏ hơn hoặc bằng 0 => xoá khỏi giỏ
+                if (existingItem.Quantity <= 0)
+                {
+                    cart.Items.Remove(existingItem);
+                }
+            }
+
+            await _cartRepository.SaveChangesAsync();
+
+            return new ResultMessage
+            {
+                Success = true,
+                Message = "Đã xóa số lượng sản phẩm ",
+                Data = null
+            };
+        }
     }
 }
 
