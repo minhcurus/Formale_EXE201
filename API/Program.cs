@@ -112,7 +112,7 @@ builder.Services.AddScoped<IUserClosetService, UserClosetService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 builder.Services.AddScoped<IProductColorService, ProductColorService>();
-
+builder.Services.AddScoped<IOutfitComboItemService, OutfitComboItemService>();
 
 //DI Repository
 builder.Services.AddScoped(typeof(GenericRepository<>));
@@ -133,7 +133,7 @@ builder.Services.AddScoped<ProductTypeRepository>();
 builder.Services.AddScoped<UserClosetRepository>();
 builder.Services.AddScoped<CartRepository>();
 builder.Services.AddScoped<FeedbackRepository>();
-
+builder.Services.AddScoped<OutfitComboItemRepository>();
 
 builder.Services.AddScoped<PaymentRepository>();
 

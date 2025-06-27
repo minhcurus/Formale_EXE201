@@ -16,7 +16,8 @@ namespace API.Mapper
                 .ForMember(d => d.Color, opt => opt.MapFrom(s => s.Color.ColorName))
                 .ForMember(d => d.Material, opt => opt.MapFrom(s => s.Material.MaterialName))
                 .ForMember(d => d.Style, opt => opt.MapFrom(s => s.Style.StyleName))
-                .ForMember(d => d.Type, opt => opt.MapFrom(s => s.Type.TypeName));
+                .ForMember(d => d.Type, opt => opt.MapFrom(s => s.Type.TypeName))
+                .ForMember(dest => dest.IsSystemCreated, opt => opt.MapFrom(src => src.IsSystemCreated)); ;
 
             //User
             CreateMap<UserAccount, UserResponse>();
