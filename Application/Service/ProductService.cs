@@ -183,6 +183,28 @@ namespace Application.Service
             return _mapper.Map<ProductResponseDto>(productFull);
         }
 
+        public async Task<string> UpdateProductImageAsync(Guid productId, IFormFile imageFile)
+        {
+            var product = await _productRepository.GetByIdAsync(productId);
+            if (product == null) throw new Exception("Product not found");
+
+            if (imageFile == null || imageFile.Length == 0)
+                throw new ArgumentException("Invalid image file.");
+
+            // Xoá ảnh cũ nếu cần
+            if (!string.IsNullOrEmpty(product.ImageURL))
+                await _cloudinaryService.DeleteImageAsync(product.ImageURL); // tuỳ bạn có xài không
+
+            // Upload ảnh mới
+            var imageUrl = await _cloudinaryService.UploadImageAsync(imageFile);
+
+            // Cập nhật
+            product.ImageURL = imageUrl;
+            await _productRepository.UpdateAsync(product);
+
+            return imageUrl;
+        }
+
         // Xoá mềm (soft delete)
         public async Task<bool> DeleteAsync(Guid id)
         {

@@ -1,5 +1,6 @@
 ﻿using Application.DTO;
 using Application.Interface;
+using Application.Service;
 using Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -92,6 +93,17 @@ namespace API.Controllers
             }
         }
 
+        [HttpPut("{id}/image")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateImage(Guid id, [FromForm] ProductImageUploadDto dto)
+        {
+            if (dto.ImageFile == null || dto.ImageFile.Length == 0)
+                return BadRequest("No image file provided.");
+
+            var imageUrl = await _service.UpdateProductImageAsync(id, dto.ImageFile);
+            return Ok(new { imageUrl });
+        }
+
         // DELETE /api/products/{id}
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
@@ -142,6 +154,8 @@ namespace API.Controllers
                 return BadRequest(new { message = "Suggest outfit failed.", error = ex.Message });
             }
         }
+
+
     }
 
 }

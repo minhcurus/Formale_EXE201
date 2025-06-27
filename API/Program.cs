@@ -2,6 +2,7 @@
 using API.Mapper;
 using Application.Interface;
 using Application.Service;
+using Application.Service.Application.Service;
 using Application.Settings;
 using Infrastructure;
 using Infrastructure.Repository;
@@ -110,7 +111,7 @@ builder.Services.AddScoped<IOutfitComboItemService, OutfitComboItemService>();
 builder.Services.AddScoped<IUserClosetService, UserClosetService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
-
+builder.Services.AddScoped<IProductColorService, ProductColorService>();
 
 
 //DI Repository
