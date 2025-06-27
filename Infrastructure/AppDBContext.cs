@@ -42,6 +42,7 @@ namespace Infrastructure
         public DbSet<OutfitComboItem> OutfitComboItems { get; set; }
 
         public DbSet<Feedback> Feedbacks { get; set; }
+        public DbSet<VisitLog> VisitLogs { get; set; }
 
 
         #endregion
@@ -332,7 +333,7 @@ namespace Infrastructure
             modelBuilder.Entity<CartItem>().ToTable("CartItems", schema);
             modelBuilder.Entity<OrderItem>().ToTable("OrderItems", schema);
             modelBuilder.Entity<Feedback>().ToTable("Feedbacks", schema);
-
+            modelBuilder.Entity<VisitLog>().ToTable("VisitLogs", schema);
 
 
             // Cấu hình cho UserCloset

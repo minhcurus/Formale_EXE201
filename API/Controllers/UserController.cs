@@ -34,28 +34,28 @@ namespace API.Controllers
             return Ok(get);
         }
 
-        [HttpPost("user-profile")]
-        public async Task<ResultMessage> GetById(int id)
-        {
-            var get = await _userService.GetUsersById(id);
+        //[HttpPost("user-profile")]
+        //public async Task<ResultMessage> GetById(int id)
+        //{
+        //    var get = await _userService.GetUsersById(id);
 
-            if (get == null)
-            {
-                return new ResultMessage
-                {
-                    Success = true,
-                    Message = "khong tim thay nguoi dung",
-                    Data = null
-                };
-            }
+        //    if (get == null)
+        //    {
+        //        return new ResultMessage
+        //        {
+        //            Success = true,
+        //            Message = "khong tim thay nguoi dung",
+        //            Data = null
+        //        };
+        //    }
 
-            return new ResultMessage
-            {
-                Success = true,
-                Message = "tim thay nguoi dung",
-                Data = get
-            }; ;
-        }
+        //    return new ResultMessage
+        //    {
+        //        Success = true,
+        //        Message = "tim thay nguoi dung",
+        //        Data = get
+        //    }; ;
+        //}
 
         [Authorize]
         [HttpGet("user-profile")]
@@ -95,12 +95,7 @@ namespace API.Controllers
 
             var get = await _userService.UpdateProfile(userDTO);
 
-            return new ResultMessage
-            {
-                Success = get > 0,
-                Message = get > 0 ? "Cập nhật thành công" : "Cập nhật thất bại",
-                Data = get
-            };
+            return get;
         }
 
         [Authorize(Roles = "1")]

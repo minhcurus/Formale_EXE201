@@ -1,4 +1,5 @@
-﻿using Application;
+﻿using System.Text.Json;
+using Application;
 using Application.DTO;
 using Application.Interface;
 using Application.Service;
@@ -127,7 +128,7 @@ namespace API.Controllers
                 Message = "Xác nhận thanh toán thành công và gán Premium.",
                 User = result
             });
-        }
+        }      
 
 
     }

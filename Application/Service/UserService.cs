@@ -93,17 +93,19 @@ namespace Application.Service
             return map;
         }
 
-        public async Task<int> UpdateProfile(UserDTO userDTO)
+        public async Task<ResultMessage> UpdateProfile(UserDTO userDTO)
         {
             var currentUserId = _currentUser.UserId;
             var user = await _repository.GetById((int)currentUserId);
             if (user == null)
             {
-                return 0;
+                return new ResultMessage
+                {
+                    Success = false,
+                    Message = "Chưa đăng nhập",
+                    Data = null
+                };
             }
-
-            // Cập nhật thông tin text
-            _mapper.Map(userDTO, user);
 
             // Upload file 
             if (userDTO.imageUser != null)
@@ -112,11 +114,19 @@ namespace Application.Service
             if (userDTO.imageBackground != null)
                 user.Background_Image = await _cloudinaryService.UploadImageAsync(userDTO.imageBackground);
 
+            // Cập nhật thông tin text
+            _mapper.Map(userDTO, user);
+
             user.UpdateAt = DateTime.Now;
 
-            var result = await _repository.UpdateAsync(user);
+            var result = await _repository.UpdateUser(user);
 
-            return result;
+            return new ResultMessage
+            {
+                Success = true,
+                Message = "Cập nhật thành công",
+                Data = _mapper.Map<UserUpdateResponse>(result)
+            };
         }
 
         public async Task<ResultMessage> GetCurrentUser()
@@ -161,9 +171,10 @@ namespace Application.Service
             if (existingUser == null)
                 return null;
 
+            TimeZoneInfo vnZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
             existingUser.PremiumPackageId = user.PremiumPackageId;
             existingUser.PremiumExpiryDate = user.PremiumExpiryDate;
-            existingUser.UpdateAt = DateTime.UtcNow;
+            existingUser.UpdateAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vnZone);
 
             await _repository.UpdateAsync(existingUser);
 

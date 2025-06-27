@@ -22,6 +22,11 @@ namespace API.Mapper
             //User
             CreateMap<UserAccount, UserResponse>();
             CreateMap<UserDTO, UserAccount>();
+            CreateMap<UserAccount, UserUpdateResponse>()
+                .ForMember(dest => dest.imageUser, opt => opt.MapFrom(src => src.Image_User))
+                .ForMember(dest => dest.imageBackground, opt => opt.MapFrom(src => src.Background_Image));
+
+            CreateMap<UserAccount, UserDTO>();
             CreateMap<UserResponse, UserDTO>()
                  .ForMember(dest => dest.imageUser, opt => opt.Ignore())
                  .ForMember(dest => dest.imageBackground, opt => opt.Ignore());

@@ -89,11 +89,11 @@ namespace Application.Service
                     Data = null
                 };
             }
-
+            TimeZoneInfo vnZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
             var order = new Order
             {
                 UserId = _currentUser.UserId.Value,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vnZone),
                 Status = Status.PENDING,
                 OrderItems = new List<OrderItem>(),
                 TotalPrice = 0
@@ -131,8 +131,8 @@ namespace Application.Service
                 OrderId = createdOrder.OrderId,
                 Amount = createdOrder.TotalPrice,
                 Description = "Thanh toán đơn hàng",
-                ReturnUrl = "https://spss.io.vn/payment/success",
-                CancelUrl = "https://spss.io.vn/payment/cancel"
+                ReturnUrl = "myapp://payos/success",
+                CancelUrl = "myapp://payos/cancel"
             };
 
             try
