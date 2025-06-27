@@ -25,7 +25,7 @@ namespace API.Controllers
             return Ok(data);
         }
 
-        [Authorize(Roles = "1")]
+        [Authorize(Roles = "2")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
