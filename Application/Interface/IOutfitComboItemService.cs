@@ -1,4 +1,5 @@
-﻿using Domain.Entities;
+﻿using Application.DTO;
+using Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,5 +11,6 @@ namespace Application.Interface
     public interface IOutfitComboItemService
     {
         List<OutfitComboItem> CreateItemsFromProducts(Guid comboId, IEnumerable<Product?> products);
+        Task<bool> UpdateProductInComboAsync(UpdateComboItemDto dto);
     }
 }

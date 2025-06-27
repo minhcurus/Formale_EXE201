@@ -139,6 +139,7 @@ namespace Application.Service
         {
             var product = _mapper.Map<Product>(dto);
             product.ImageURL = dto.ImageFile != null ? await _cloudinaryService.UploadImageAsync(dto.ImageFile): "";
+            product.IsSystemCreated = true;
 
             await _productRepository.AddAsync(product);
 
@@ -220,7 +221,7 @@ namespace Application.Service
         public async Task<PaginatedResultDto<ProductResponseDto>> SearchAsync(ProductQueryDto dto)
         {
             var q = _productRepository.Query()
-                                      .Where(p => !p.IsDeleted);
+                                      .Where(p => !p.IsDeleted && p.IsSystemCreated);
 
             if (!string.IsNullOrWhiteSpace(dto.Keyword))
                 q = q.Where(p => EF.Functions.Like(p.Name, $"%{dto.Keyword}%"));

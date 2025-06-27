@@ -11,11 +11,13 @@ namespace API.Controllers
     [ApiController]
     public class OutfitController : Controller
     {
+        private readonly IOutfitComboItemService _comboItemService;
         private readonly IOutfitService _outfitService;
 
-        public OutfitController(IOutfitService outfitService)
+        public OutfitController(IOutfitService outfitService, IOutfitComboItemService comboItemService)
         {
             _outfitService = outfitService;
+            _comboItemService = comboItemService;
         }
 
         [Authorize]
@@ -61,6 +63,16 @@ namespace API.Controllers
                 return Forbid();
 
             return Ok(result);
+        }
+
+        [HttpPut("update-product-in-combo")]
+        public async Task<IActionResult> UpdateProductInCombo([FromBody] UpdateComboItemDto dto)
+        {
+            var result = await _comboItemService.UpdateProductInComboAsync(dto);
+            if (!result)
+                return BadRequest("Cập nhật thất bại. Kiểm tra quyền sở hữu, loại sản phẩm hoặc ID không hợp lệ.");
+
+            return Ok("Cập nhật sản phẩm trong combo thành công.");
         }
 
 
