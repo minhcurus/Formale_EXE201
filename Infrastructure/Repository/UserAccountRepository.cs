@@ -35,6 +35,10 @@ namespace Infrastructure.Repository
             return await _context.Users.FirstOrDefaultAsync(e => e.otp == otp);
         }
 
-
+        public async Task CreateVisitLog(VisitLog log)
+        {
+            _context.VisitLogs.Add(log);
+            await _context.SaveChangesAsync();
+        }
     }
 }

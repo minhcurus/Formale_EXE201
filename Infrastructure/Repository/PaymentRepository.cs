@@ -39,12 +39,24 @@ namespace Infrastructure.Repository
         public async Task<int> UpdateStatusAsync(long orderCode, Status newStatus)
         {
             var payment = await _context.Payments.FirstOrDefaultAsync(p => p.OrderCode == orderCode);
-            if (payment == null) return 0;
+            TimeZoneInfo vnZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            if (payment == null)
+            {
+                return 0;
+            }
 
             payment.Status = newStatus;
+
             if (newStatus == Status.COMPLETE)
             {
-                payment.PaidAt = DateTime.UtcNow;
+                payment.PaidAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vnZone);
+
+                var order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == payment.OrderId);
+                if (order != null)
+                {
+                    order.PaidAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vnZone);
+                    order.Status = Status.COMPLETE;
+                }
             }
 
             return await _context.SaveChangesAsync();

@@ -12,7 +12,7 @@ namespace Application.Interface
     {
         Task<List<UserResponse>> GetAllUser();
         Task<UserResponse> GetUsersById(int id);
-        Task<int> UpdateProfile(UserDTO userAccount);
+        Task<ResultMessage> UpdateProfile(UserDTO userAccount);
         Task<bool> DeleteProfile(int id);
         Task<ResultMessage> GetCurrentUser();
         Task<UserResponse> UpdateUserPremium(UserResponse user);

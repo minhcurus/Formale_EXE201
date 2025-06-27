@@ -16,6 +16,7 @@ using static System.Net.WebRequestMethods;
 using Google.Apis.Auth;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Http;
 namespace Application.Service
 {
     public class UserAccountService : IUserAccountService
@@ -25,14 +26,16 @@ namespace Application.Service
         private readonly EmailService _emailService;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly GoogleSetting _googleSetting;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public UserAccountService(UserAccountRepository repository, IOptions<JwtSetting> jwtSetting, EmailService emailService, IHttpClientFactory httpClientFactory, IOptions<GoogleSetting> googleSetting)
+        public UserAccountService(UserAccountRepository repository, IOptions<JwtSetting> jwtSetting, EmailService emailService, IHttpClientFactory httpClientFactory, IOptions<GoogleSetting> googleSetting, IHttpContextAccessor httpContextAccessor)
         {
             _repository = repository;
             _jwtSettings = jwtSetting.Value;    
             _emailService = emailService;
             _httpClientFactory = httpClientFactory;
             _googleSetting = googleSetting.Value;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<ResultMessage> ChangePassword(ChangePasswordDTO changePasswordDTO)
@@ -141,6 +144,13 @@ namespace Application.Service
             getLogin.Token = token;
             await _repository.UpdateAsync(getLogin);
 
+            await _repository.CreateVisitLog(new VisitLog
+            {
+                AccessTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time")),
+                IPAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                UserId = getLogin.UserId,
+            });
+
             return new ResultMessage
             {
                 Success = true,
@@ -184,6 +194,15 @@ namespace Application.Service
 
             await _repository.CreateAsync(newUser);
             await _emailService.SendEmailAsync(registerDTO.Email, "Mã kích hoạt tài khoản", $"Mã OTP của bạn là: {otp}");
+
+            await _repository.CreateVisitLog(new VisitLog
+            {
+                AccessTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time")),
+                IPAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                LogType = "Register",
+                UserId = newUser.UserId,
+            });
+
             return new ResultMessage
             {
                 Success = true,
@@ -227,7 +246,15 @@ namespace Application.Service
             };
 
             await _repository.CreateAsync(newUser);
-            await _emailService.SendEmailAsync(registerDTO.Email, "Mã kích hoạt tài khoản", $"Mã OTP của bạn là: {otp}");
+            await _emailService.SendEmailAsync(registerDTO.Email, "Mã kích hoạt tài khoản Manager", $"Mã OTP của bạn là: {otp}");
+
+            await _repository.CreateVisitLog(new VisitLog
+            {
+                AccessTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time")),
+                IPAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                LogType = "Register",
+                UserId = newUser.UserId,
+            });
             return new ResultMessage
             {
                 Success = true,
@@ -260,7 +287,6 @@ namespace Application.Service
                 Data = null
             };
         }
-
 
         private string GenerateJwtToken(UserAccount user)
         {
@@ -308,7 +334,6 @@ namespace Application.Service
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
-
 
         public async Task<ResultMessage> ActiveAccount(ActiveAccountDTO accountDTO)
         {
@@ -423,6 +448,13 @@ namespace Application.Service
                 user.Token = token;
                 await _repository.UpdateAsync(user);
 
+                await _repository.CreateVisitLog(new VisitLog
+                {
+                    AccessTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time")),
+                    IPAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    UserId = user.UserId,
+                });
+
                 return new ResultMessage
                 {
                     Success = true,
@@ -454,6 +486,14 @@ namespace Application.Service
             var jwt = GenerateJwtToken(createdUser);
             createdUser.Token = jwt;
             await _repository.UpdateAsync(createdUser);
+
+            await _repository.CreateVisitLog(new VisitLog
+            {
+                AccessTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time")),
+                IPAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                LogType = "Register",
+                UserId = newUser.UserId,
+            });
 
             return new ResultMessage
             {

@@ -43,13 +43,13 @@ namespace Application.Service
                     Data = null,
                 };
             }
-
+            TimeZoneInfo vnZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
             var order = new OrderDTO
             {
                 UserId = _currentUser.UserId,
                 TotalPrice = package.Price,
                 Status = Status.PENDING,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vnZone),
             };
 
 
@@ -74,7 +74,7 @@ namespace Application.Service
                 BuyerPhone = _currentUser.PhoneNumber,
                 BuyerAddress = _currentUser.Address,
                 ReturnUrl = "myapp://payment-success",
-                CancelUrl = "myapp://payment-success",
+                CancelUrl = "myapp://payment-cancel",
                 Method = PaymentMethod.PayOs,
                 OrderId = createdOrder.OrderId,
                 PremiumPackageId = package.Id
@@ -162,7 +162,9 @@ namespace Application.Service
             if (premiumPackage == null) return null;
 
             user.PremiumPackageId = premiumPackage.Id;
-            user.PremiumExpiryDate = DateTime.UtcNow.AddDays(premiumPackage.DurationInDays);
+            TimeZoneInfo vnZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var nowVN = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vnZone);
+            user.PremiumExpiryDate = nowVN.AddDays(premiumPackage.DurationInDays);
 
             var updatedUser = await _userService.UpdateUserPremium(user);
 

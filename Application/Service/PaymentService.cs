@@ -49,6 +49,7 @@ namespace Application.Service
             }
 
             var payOsResponse = await _payOsService.CreatePaymentAsync(dto);
+            TimeZoneInfo vnZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 
             var payment = new Payment
             {
@@ -68,7 +69,7 @@ namespace Application.Service
                 Signature = payOsResponse.Signature,
                 OrderCode = payOsResponse.OrderCode,
                 Status = Status.PENDING,
-                CreateAt = DateTime.UtcNow,
+                CreateAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vnZone),
                 PremiumPackageId = dto.PremiumPackageId,
             };
 
@@ -196,6 +197,8 @@ namespace Application.Service
             }
 
             var updated = await _paymentRepo.UpdateStatusAsync(orderCode, newStatus);
+            
+            
             return new ResultMessage
             {
                 Success = updated > 0,
