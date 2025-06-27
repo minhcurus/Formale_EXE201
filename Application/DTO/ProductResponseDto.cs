@@ -27,7 +27,7 @@ namespace Application.DTO
 
         public double AverageRating { get; set; }
 
-        //public Boolean IsSystemCreated { get; set; } 
+        public Boolean IsSystemCreated { get; set; } 
 
         //public int? UserId { get; set; }
     }
