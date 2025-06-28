@@ -13,5 +13,8 @@ namespace Application.Interface
         Task<UserClosetDto> GetByIdAsync(Guid id);
         Task<List<UserClosetDto>> GetByUserIdAsync(int userId);
         Task<bool> DeleteByIdAsync(Guid id);
+
+        Task<List<UserClosetDto>> GetSingleItemsAsync(int userId);
+        Task<List<UserClosetDto>> GetComboItemsAsync(int userId);
     }
 }

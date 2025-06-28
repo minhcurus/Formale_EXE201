@@ -190,5 +190,36 @@ namespace Application.Service
                     .ToList()
             };
         }
+
+        public async Task<List<OutfitComboBasicDto>> GetBasicCombosByUserIdAsync(int userId)
+        {
+            var combos = await _outfitComboRepository.Query()
+                .Where(c => c.UserId == userId)
+                .Select(c => new OutfitComboBasicDto
+                {
+                    ComboId = c.ComboId,
+                    Name = c.Name,
+                    Description = c.Description,
+                    UserId = c.UserId
+                })
+                .ToListAsync();
+
+            return combos;
+        }
+        public async Task<bool> UpdateComboInfoAsync(int userId, UpdateComboInfoDto dto)
+        {
+            var combo = await _outfitComboRepository.Query()
+                .FirstOrDefaultAsync(c => c.ComboId == dto.ComboId && c.UserId == userId);
+
+            if (combo == null) return false;
+
+            combo.Name = dto.Name;
+            combo.Description = dto.Description;
+
+            await _outfitComboRepository.UpdateAsync(combo);
+            return true;
+        }
+
+
     }
 }
