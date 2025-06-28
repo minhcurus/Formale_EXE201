@@ -85,5 +85,36 @@ namespace Application.Service
             return true;
         }
 
+        public async Task<List<UserClosetDto>> GetSingleItemsAsync(int userId)
+        {
+            var data = _repository.Query()
+                .Where(x => x.UserId == userId && x.ProductId != null)
+                .Select(x => new UserClosetDto
+                {
+                    ClosetId = x.ClosetId,
+                    UserId = x.UserId,
+                    ProductId = x.ProductId,
+                    ComboId = x.ComboId
+                }).ToList();
+
+            return await Task.FromResult(data);
+        }
+
+        public async Task<List<UserClosetDto>> GetComboItemsAsync(int userId)
+        {
+            var data = _repository.Query()
+                .Where(x => x.UserId == userId && x.ComboId != null)
+                .Select(x => new UserClosetDto
+                {
+                    ClosetId = x.ClosetId,
+                    UserId = x.UserId,
+                    ProductId = x.ProductId,
+                    ComboId = x.ComboId
+                }).ToList();
+
+            return await Task.FromResult(data);
+        }
+
+
     }
 }

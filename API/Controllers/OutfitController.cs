@@ -75,6 +75,31 @@ namespace API.Controllers
             return Ok("Cập nhật sản phẩm trong combo thành công.");
         }
 
+        [Authorize]
+        [HttpGet("basic-user-combos")]
+        public async Task<IActionResult> GetBasicCombos([FromQuery] int userId)
+        {
+            var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
+            if (userId != currentUserId)
+                return Forbid();
+
+            var combos = await _outfitService.GetBasicCombosByUserIdAsync(userId);
+            return Ok(combos);
+        }
+
+        [Authorize]
+        [HttpPut("update-combo-info")]
+        public async Task<IActionResult> UpdateComboInfo([FromQuery] int userId, [FromBody] UpdateComboInfoDto dto)
+        {
+            var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
+            if (userId != currentUserId)
+                return Forbid();
+
+            var result = await _outfitService.UpdateComboInfoAsync(userId, dto);
+            if (!result) return NotFound("Combo không tồn tại hoặc không thuộc quyền sở hữu.");
+
+            return Ok(new { message = "Cập nhật thông tin combo thành công." });
+        }
 
     }
 }

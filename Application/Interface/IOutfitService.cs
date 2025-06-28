@@ -12,5 +12,7 @@ namespace Application.Interface
         Task<OutfitSuggestionDto?> SuggestComboFromClosetAsync(int userId, string prompt);
         Task<bool> SaveSuggestedComboAsync(int userId, Guid comboId);
         Task<OutfitComboViewDto?> GetComboDetailsAsync(Guid comboId);
+        Task<List<OutfitComboBasicDto>> GetBasicCombosByUserIdAsync(int userId);
+        Task<bool> UpdateComboInfoAsync(int userId, UpdateComboInfoDto dto);
     }
 }

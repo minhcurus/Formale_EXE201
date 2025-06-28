@@ -69,5 +69,25 @@ namespace API.Controllers
             var data = await _userClosetService.GetByUserIdAsync(userId);
             return Ok(data);
         }
+
+
+        [Authorize]
+        [HttpGet("single-items")]
+        public async Task<IActionResult> GetSingleItems()
+        {
+            var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
+            var result = await _userClosetService.GetSingleItemsAsync(currentUserId);
+            return Ok(result);
+        }
+
+        [Authorize]
+        [HttpGet("combo-items")]
+        public async Task<IActionResult> GetComboItems()
+        {
+            var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
+            var result = await _userClosetService.GetComboItemsAsync(currentUserId);
+            return Ok(result);
+        }
+
     }
 }
