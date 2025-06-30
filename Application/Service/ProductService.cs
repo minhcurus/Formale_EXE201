@@ -221,7 +221,7 @@ namespace Application.Service
         public async Task<PaginatedResultDto<ProductResponseDto>> SearchAsync(ProductQueryDto dto)
         {
             var q = _productRepository.Query()
-                                      .Where(p => !p.IsDeleted && p.IsSystemCreated);
+                                      .Where(p => p.IsDeleted == false && p.IsSystemCreated == true);
 
             if (!string.IsNullOrWhiteSpace(dto.Keyword))
                 q = q.Where(p => EF.Functions.Like(p.Name, $"%{dto.Keyword}%"));
@@ -253,7 +253,11 @@ namespace Application.Service
                                    Color = p.Color.ColorName,
                                    Material = p.Material.MaterialName,
                                    Style = p.Style.StyleName,
-                                   Type = p.Type.TypeName
+                                   Type = p.Type.TypeName,
+                                   TotalFeedbacks = p.TotalFeedbacks,
+                                   AverageRating = p.AverageRating,
+                                   IsSystemCreated = p.IsSystemCreated
+
                                })
                                .ToListAsync();
 

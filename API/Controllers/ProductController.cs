@@ -2,6 +2,7 @@
 using Application.Interface;
 using Application.Service;
 using Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -104,6 +105,7 @@ namespace API.Controllers
             return Ok(new { imageUrl });
         }
 
+        [Authorize(Roles = "1")]
         // DELETE /api/products/{id}
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
