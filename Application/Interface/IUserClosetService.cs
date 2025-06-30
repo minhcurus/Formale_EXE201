@@ -16,5 +16,6 @@ namespace Application.Interface
 
         Task<List<UserClosetDto>> GetSingleItemsAsync(int userId);
         Task<List<UserClosetDto>> GetComboItemsAsync(int userId);
+        Task<List<ClosetItemResponseDto>> SearchClosetAsync(int userId, string? keyword);
     }
 }

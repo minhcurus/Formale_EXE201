@@ -89,5 +89,15 @@ namespace API.Controllers
             return Ok(result);
         }
 
+        [Authorize]
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchCloset([FromQuery] string keyword)
+        {
+            var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
+            var result = await _userClosetService.SearchClosetAsync(currentUserId, keyword);
+            if (result == null || result.Count == 0)
+                return NotFound(new { message = "Not found!" });
+            return Ok(result);
+        }
     }
 }

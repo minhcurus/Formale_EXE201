@@ -115,6 +115,31 @@ namespace Application.Service
             return await Task.FromResult(data);
         }
 
+        public async Task<List<ClosetItemResponseDto>> SearchClosetAsync(int userId, string? keyword)
+        {
+            var query = _repository.Query()
+                .Include(x => x.Product)
+                .Include(x => x.Combo)
+                .Where(x => x.UserId == userId);
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                var lowerKeyword = keyword.Trim().ToLower();
+                query = query.Where(x =>
+                    (x.Product != null && x.Product.Name.ToLower().Contains(lowerKeyword)) ||
+                    (x.Combo != null && x.Combo.Name.ToLower().Contains(lowerKeyword))
+                );
+            }
+
+            return await query.Select(x => new ClosetItemResponseDto
+            {
+                ProductId = x.ProductId,
+                ProductName = x.Product != null ? x.Product.Name : null,
+                ComboId = x.ComboId,
+                ComboName = x.Combo != null ? x.Combo.Name : null
+            }).ToListAsync();
+        }
+
 
     }
 }
