@@ -71,6 +71,7 @@ namespace Application.Service
                 Status = Status.PENDING,
                 CreateAt = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vnZone),
                 PremiumPackageId = dto.PremiumPackageId,
+
             };
 
             await _paymentRepo.CreateAsync(payment);
@@ -97,6 +98,8 @@ namespace Application.Service
                     payment.Id,
                     payment.UserId,
                     payment.Amount,
+                    payment.OrderId,
+                    payment.PremiumPackageId,
                     payment.OrderCode,
                     payment.Description,
                     payment.BuyerName,
@@ -108,6 +111,8 @@ namespace Application.Service
                     payment.Status,
                     payment.CreateAt,
                     payment.PaidAt,
+                    payment.CancelledAt,
+                    payment.CancelReason,
                     payment.TransactionId
                 }
             };
@@ -222,6 +227,7 @@ namespace Application.Service
         {
             return await _paymentRepo.GetByOrderCode(orderCode);
         }
+
 
     }
 
