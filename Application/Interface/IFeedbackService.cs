@@ -14,6 +14,8 @@ namespace Application.Interface
         Task<(int TotalFeedbacks, double AverageRating)> GetProductFeedbackStatsAsync(Guid productId);
         Task<IEnumerable<FeedbackDto>> GetProductFeedbacksAsync(Guid productId);
         Task<IEnumerable<FeedbackDto>> GetUserFeedbacksAsync(int userId);
+        Task DeleteFeedbackAsync(Guid feedbackId);
+        Task<IEnumerable<FeedbackDto>> GetAllFeedbacksAsync();
 
     }
 }

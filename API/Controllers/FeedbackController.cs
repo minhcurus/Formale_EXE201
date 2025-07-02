@@ -69,6 +69,29 @@ namespace API.Controllers
             var result = await _feedbackService.GetUserFeedbacksAsync(userId);
             return Ok(result);
         }
+
+        [HttpDelete("{feedbackId}")]
+        [Authorize(Roles = "1")]
+        public async Task<IActionResult> DeleteFeedback(Guid feedbackId)
+        {
+            try
+            {
+                await _feedbackService.DeleteFeedbackAsync(feedbackId);
+                return Ok(new { message = "Feedback deleted." });
+            }
+            catch (Exception ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("all")]
+        [Authorize(Roles = "1")]
+        public async Task<IActionResult> GetAllFeedbacksForAdmin()
+        {
+            var list = await _feedbackService.GetAllFeedbacksAsync();
+            return Ok(list);
+        }
     }
 
 }

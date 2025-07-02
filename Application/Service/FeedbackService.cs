@@ -3,7 +3,9 @@ using Application.Interface;
 using AutoMapper;
 using Domain.Entities;
 using Infrastructure.Repository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -29,6 +31,36 @@ namespace Application.Service
             _cloudinaryService = cloudinaryService;
         }
 
+        public async Task DeleteFeedbackAsync(Guid feedbackId)
+        {
+            var feedback = await _feedbackRepository.Query()
+                .FirstOrDefaultAsync(f => f.FeedbackId == feedbackId);
+
+            if (feedback == null)
+                throw new Exception("Feedback not found.");
+
+            // Nếu có ảnh thì xóa trên Cloudinary
+            if (!string.IsNullOrEmpty(feedback.ImageURL))
+            {
+                var uri = new Uri(feedback.ImageURL);
+                var fileName = uri.Segments.Last();
+                var publicId = $"products/{fileName.Substring(0, fileName.LastIndexOf('.'))}";
+                await _cloudinaryService.DeleteImageAsync(publicId);
+            }
+
+            await _feedbackRepository.RemoveAsync(feedback);
+            await UpdateProductStats(feedback.ProductId);
+        }
+
+        public async Task<IEnumerable<FeedbackDto>> GetAllFeedbacksAsync()
+        {
+            var feedbacks = await _feedbackRepository.Query()
+                .Include(f => f.User)
+                .Include(f => f.Product)
+                .ToListAsync();
+
+            return _mapper.Map<IEnumerable<FeedbackDto>>(feedbacks);
+        }
 
         public async Task CreateFeedbackAsync(int userId, Guid productId, FeedbackRequestDto dto)
         {

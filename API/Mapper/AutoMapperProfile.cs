@@ -50,7 +50,8 @@ namespace API.Mapper
             //Feedback
             CreateMap<FeedbackRequestDto, Feedback>();
             CreateMap<Feedback, FeedbackDto>()
-                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName));
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.FullName))
+                 .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name));
 
         }
 
