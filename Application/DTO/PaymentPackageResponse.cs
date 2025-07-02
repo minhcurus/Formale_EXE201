@@ -10,6 +10,8 @@ namespace Application.DTO
     public class PaymentPackageResponse
     {
         public int? UserId { get; set; }
+        public int? OrderId { get; set; }
+        public int? PremiumPackageId { get; set; }
         public decimal Amount { get; set; }
         public string Description { get; set; }
         public Status Status { get; set; }
@@ -21,5 +23,8 @@ namespace Application.DTO
         public string BuyerAddress { get; set; }
         public PaymentMethod Method { get; set; }
         public string ReturnUrl { get; set; }
+        public DateTime? PaidAt { get; set; }
+        public DateTime? CancelledAt { get; set; }
+        public DateTime CreateAt { get; set; }
     }
 }

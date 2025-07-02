@@ -21,6 +21,5 @@ namespace Application.Interface
         Task<List<PaymentPackageResponse>> GetAllPremiumPayments();
         Task<Payment?> GetPaymentByOrderCode(long orderCode);
 
-
     }
 }

@@ -96,6 +96,10 @@ namespace API.Controllers
             {
                 await _paymentService.UpdatePaymentStatus(orderCode, Status.COMPLETE);
             }
+            if(status == "CANCELLED" ||  status == "CANCELLE")
+            {
+                await _paymentService.UpdatePaymentStatus(orderCode, Status.CANCELLED);
+            }
             return Ok(new { orderCode, status });
         }
 
@@ -128,8 +132,7 @@ namespace API.Controllers
                 Message = "Xác nhận thanh toán thành công và gán Premium.",
                 User = result
             });
-        }      
-
+        }
 
     }
 }
