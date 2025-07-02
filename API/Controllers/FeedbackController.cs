@@ -19,7 +19,7 @@ namespace API.Controllers
 
         [HttpPost("create")]
         [Authorize]
-        public async Task<IActionResult> Create(Guid productId, [FromBody] FeedbackRequestDto request)
+        public async Task<IActionResult> Create(Guid productId, [FromForm] FeedbackRequestDto request)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
 
@@ -40,7 +40,7 @@ namespace API.Controllers
 
         [HttpPut("update")]
         [Authorize]
-        public async Task<IActionResult> Update(Guid productId, [FromBody] FeedbackRequestDto request)
+        public async Task<IActionResult> Update(Guid productId, [FromForm] FeedbackRequestDto request)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value!);
             await _feedbackService.UpdateFeedbackAsync(userId, productId, request);
