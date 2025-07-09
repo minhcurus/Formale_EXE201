@@ -266,36 +266,27 @@ namespace Infrastructure
 
 
 
-            //PremiumPackage
-            modelBuilder.Entity<PremiumPackage>().HasData(
-                new PremiumPackage
-                {
-                    Id = 1,
-                    Tier = Domain.Enum.PremiumPackageTier.Bronze,
-                    Name = "Bronze Package",
-                    Description = "Gói cơ bản, hỗ trợ hạn chế.",
-                    Price = 50000,
-                    DurationInDays = 7
-                },
-                new PremiumPackage
-                {
-                    Id = 2,
-                    Tier = Domain.Enum.PremiumPackageTier.Silver,
-                    Name = "Silver Package",
-                    Description = "Gói nâng cao với nhiều tính năng hơn.",
-                    Price = 120000,
-                    DurationInDays = 30
-                },
-                new PremiumPackage
-                {
-                    Id = 3,
-                    Tier = Domain.Enum.PremiumPackageTier.Gold,
-                    Name = "Gold Package",
-                    Description = "Gói cao cấp đầy đủ tính năng.",
-                    Price = 300000,
-                    DurationInDays = 90
-                }
-            );
+            ////PremiumPackage
+            //modelBuilder.Entity<PremiumPackage>().HasData(
+            //    new PremiumPackage
+            //    {
+            //        Id = 1,
+            //        Tier = Domain.Enum.PremiumPackageTier.Premium,
+            //        Name = "Premiun Package",
+            //        Description = "Gói cơ bản.\r\n- Cung cấp tính năng mở rộng của A.I gợi ý.\r\n- Có thể lựa chọn phối đồ ở chính kho đồ của mình.",
+            //        Price = 690000,
+            //        DurationInDays = 30
+            //    },
+            //    new PremiumPackage
+            //    {
+            //        Id = 2,
+            //        Tier = Domain.Enum.PremiumPackageTier.Gold,
+            //        Name = "Gold Package",
+            //        Description = "Gói nâng cao.\r\n- Gói nâng cao với nhiều tính năng hơn cho A.I gợi ý, không giới hạn lần thử.\r\n- Nhận được 1 gói combo đặc biệt ở lần mua đầu tiên.\r\n- Mỗi tuần đều nhận được 1 kho đồ đặc biệt do chuyên gia phối đồ cung cấp. \r\n- Còn nhiều tính năng khác. ",
+            //        Price = 1000000,
+            //        DurationInDays = 30
+            //    }
+            //);
 
 
             // Cấu hình many-to-many giữa ProductCategory và ProductSize

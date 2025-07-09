@@ -164,7 +164,8 @@ namespace Application.Service
             user.PremiumPackageId = premiumPackage.Id;
             TimeZoneInfo vnZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
             var nowVN = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, vnZone);
-            user.PremiumExpiryDate = nowVN.AddDays(premiumPackage.DurationInDays);
+
+            user.PremiumExpiryDate = nowVN.AddDays(30);
 
             var updatedUser = await _userService.UpdateUserPremium(user);
 
