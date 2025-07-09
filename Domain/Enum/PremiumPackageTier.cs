@@ -8,8 +8,7 @@ namespace Domain.Enum
 {
     public enum PremiumPackageTier
     {
-        Bronze,
-        Silver,
+        Premium,
         Gold
     }
 }

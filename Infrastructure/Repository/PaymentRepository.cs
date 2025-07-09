@@ -46,7 +46,7 @@ namespace Infrastructure.Repository
                 return 0;
 
             if (payment.Status == Status.COMPLETE)
-                return 0;
+                return 1;
 
             payment.Status = newStatus;
 
