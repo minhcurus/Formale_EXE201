@@ -1,5 +1,6 @@
 ﻿using Application.DTO;
 using Application.Interface;
+using Application.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
@@ -13,11 +14,13 @@ namespace API.Controllers
     {
         private readonly IOutfitComboItemService _comboItemService;
         private readonly IOutfitService _outfitService;
+        private readonly IUserService _userService;
 
-        public OutfitController(IOutfitService outfitService, IOutfitComboItemService comboItemService)
+        public OutfitController(IOutfitService outfitService, IOutfitComboItemService comboItemService, IUserService userService)
         {
             _outfitService = outfitService;
             _comboItemService = comboItemService;
+            _userService = userService;
         }
 
         [Authorize]
@@ -28,7 +31,13 @@ namespace API.Controllers
             if (userId != currentUserId)
                 return Forbid();
 
-            var suggestion = await _outfitService.SuggestComboFromClosetAsync(userId, prompt);
+            var user = await _userService.GetUsersById(currentUserId);
+            if (user.PremiumPackageId == null || user.PremiumExpiryDate < DateTime.UtcNow)
+            {
+                return Unauthorized("Bạn cần nâng cấp gói để sử dụng tính năng này.");  
+            }
+
+                var suggestion = await _outfitService.SuggestComboFromClosetAsync(userId, prompt);
             if (suggestion == null)
                 return NotFound("Không tìm thấy combo phù hợp.");
 
