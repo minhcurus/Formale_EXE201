@@ -14,30 +14,18 @@ namespace Application.Service
     {
         private readonly HttpClient _http;
         private readonly ProductStyleRepository _styleRepo; // chỉ giữ lại repo
-        private readonly IUserService _userService;
-        private readonly CurrentUserService _currentUser;
 
         public OpenRouterService(IHttpClientFactory factory,
                                  ProductStyleRepository styleRepo,
-                                  IUserService userService,
-                                   CurrentUserService currentUserService)
+                                  IUserService userService)
         {
             _http = factory.CreateClient("OpenRouter");
             _styleRepo = styleRepo;
-            _userService = userService;
-            _currentUser = currentUserService;
         }
 
         /// <summary>Trả về đúng 1 style (string) hoặc null</summary>
         public async Task<string?> ClassifyAsync(string prompt)
         {
-            var user = await _userService.GetUsersById(_currentUser.UserId.Value);
-            if (user.PremiumPackageId == null
-                || user.PremiumExpiryDate < DateTime.UtcNow)
-            {
-                throw new UnauthorizedAccessException("Bạn cần nâng cấp gói để sử dụng tính năng này.");
-            }
-
             var styles = _styleRepo.Query()
                                .Select(s => s.StyleName)
                                .ToArray(); // gọi ở đây, EF context đã sẵn sàng
