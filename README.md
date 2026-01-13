@@ -849,7 +849,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## 📞 Liên hệ
 
-- **Project Link**: [https://github.com/your-username/Formale_EXE201](https://github.com/your-username/Formale_EXE201)
+- **Project Link**: [https://github.com/EXE201-Formale](https://github.com/EXE201-Formale)
 
 ---
 
